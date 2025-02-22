@@ -4,6 +4,7 @@
       "-l",
       "-i",
       "source ~/Diffusion-Model/bin/activate"
-    ]
+    ],
+    "python.terminal.activateEnvironment": true
   }
   
