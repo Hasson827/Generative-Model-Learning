@@ -1,0 +1,9 @@
+{
+    "python.pythonPath": "~/Diffusion-Model/bin/python",
+    "terminal.integrated.shellArgs.osx": [
+      "-l",
+      "-i",
+      "source ~/Diffusion-Model/bin/activate"
+    ]
+  }
+  
