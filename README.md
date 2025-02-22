@@ -14,13 +14,13 @@
    * **优化理论** ：理解梯度下降、反向传播等优化方法。
      **推荐资源** ：
    * 《概率论与数理统计》（国内教材）
-   * [Khan Academy: Probability and Statistics汗学院：概率与统计](https://www.khanacademy.org/math/statistics-probability)
+   * [Khan Academy: Probability and Statistics](https://www.khanacademy.org/math/statistics-probability)
 2. **深度学习基础**
    * **PyTorch** ：确保你对PyTorch的Tensor操作、自动求导、模型定义和训练流程非常熟悉。
    * **生成模型** ：了解生成对抗网络（GANs）、变分自编码器（VAEs）等生成模型的基本原理。
      **推荐资源** ：
    * [PyTorch官方教程](https://pytorch.org/tutorials/)
-   * [Deep Learning with PyTorch: A 60 Minute Blitz深度学习与 PyTorch：60 分钟速成](https://pytorch.org/tutorials/beginner/deep_learning_60min_blitz.html)
+   * [Deep Learning with PyTorch: A 60 Minute Blitz](https://pytorch.org/tutorials/beginner/deep_learning_60min_blitz.html)
 
 ---
 
@@ -30,13 +30,13 @@
    * 了解扩散模型的核心思想：通过逐步添加噪声将数据分布转化为高斯分布，再通过逆向过程生成数据。
    * 学习关键概念：前向过程（Forward Process）、逆向过程（Reverse Process）、噪声预测网络（Noise Prediction Network）。
      **推荐资源** ：
-   * [Denoising Diffusion Probabilistic Models (DDPM) 原始论文去噪扩散概率模型（DDPM）原始论文](https://arxiv.org/abs/2006.11239)
-   * [Lilian Weng的博客：What are Diffusion Models?李莉安·王博客：什么是扩散模型？](https://lilianweng.github.io/posts/2021-07-11-diffusion-models/)
+   * [Denoising Diffusion Probabilistic Models (DDPM) ](https://arxiv.org/abs/2006.11239)
+   * [Lilian Weng的博客：What are Diffusion Models?](https://lilianweng.github.io/posts/2021-07-11-diffusion-models/)
 2. **代码实践**
    * 从简单的扩散模型实现开始，理解代码结构。
      **推荐资源** ：
-   * [PyTorch实现DDPM  PyTorch 实现 DDPM](https://github.com/hojonathanho/diffusion)
-   * [Denoising Diffusion Implicit Models (DDIM) 代码去噪扩散隐式模型（DDIM）代码](https://github.com/ermongroup/ddim)
+   * [PyTorch实现DDPM](https://github.com/hojonathanho/diffusion)
+   * [Denoising Diffusion Implicit Models (DDIM)](https://github.com/ermongroup/ddim)
 
 ---
 
@@ -46,8 +46,8 @@
    * 学习改进的扩散模型，如DDIM、Score-Based Generative Models、Latent Diffusion Models (LDM)。学习改进的扩散模型，如 DDIM、基于随机微分方程的得分生成模型、潜在扩散模型（LDM）。
      **推荐资源** ：
    * [DDIM论文](https://arxiv.org/abs/2010.02502)
-   * [Score-Based Generative Modeling through Stochastic Differential Equations基于随机微分方程的得分生成建模](https://arxiv.org/abs/2011.13456)
-   * [Latent Diffusion Models  潜在扩散模型](https://arxiv.org/abs/2112.10752)
+   * [Score-Based Generative Modeling through Stochastic Differential Equations](https://arxiv.org/abs/2011.13456)
+   * [Latent Diffusion Models](https://arxiv.org/abs/2112.10752)
 2. **应用领域**
    * 了解扩散模型在图像生成、文本生成、音频生成等领域的应用。
    * **推荐资源** ：
@@ -110,14 +110,16 @@ cd UCIML-Example
 2. **数据集下载说明**
 
 本项目使用了以下数据集：
+
 - [MNIST](http://yann.lecun.com/exdb/mnist/)
 
 3. 下载数据集
--  确保你已安装 `wget` 和 `unzip`。在 Linux/macOS 中可以使用以下命令安装：
-   ```bash
-   sudo apt update && sudo apt install wget unzip   # Ubuntu/Debian
-   brew install wget unzip                          # macOS (使用 Homebrew)
 
+- 确保你已安装 `wget` 和 `unzip`。在 Linux/macOS 中可以使用以下命令安装：
+  ```bash
+  sudo apt update && sudo apt install wget unzip   # Ubuntu/Debian
+  brew install wget unzip                          # macOS (使用 Homebrew)
+  ```
 - 运行以下命令来安装数据集
 
 ```bash
