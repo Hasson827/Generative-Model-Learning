@@ -107,12 +107,21 @@ git clone https://github.com/Hasson827/UCIML-Example.git
 cd UCIML-Example
 ```
 
-2. **安装依赖**
+2. **数据集下载说明**
 
-确保你已经安装了所需的 Python 库。你可以使用以下命令安装所有依赖：
+本项目使用了以下数据集：
+- [MNIST](http://yann.lecun.com/exdb/mnist/)
+
+3. 下载数据集
+-  确保你已安装 `wget` 和 `unzip`。在 Linux/macOS 中可以使用以下命令安装：
+   ```bash
+   sudo apt update && sudo apt install wget unzip   # Ubuntu/Debian
+   brew install wget unzip                          # macOS (使用 Homebrew)
+
+- 运行以下命令来安装数据集
 
 ```bash
-   pip install -r requirements.txt
+bash Book_Notes/download-datasets.sh
 ```
 
 ## 贡献

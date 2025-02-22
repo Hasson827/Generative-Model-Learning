@@ -10,7 +10,7 @@ if [ ! -d "MNIST" ]; then
     mkdir MNIST
     cd MNIST
     echo "📦 使用 Python 自动下载 MNIST 数据集..."
-    /usr/bin/python3 -c "
+    ~/Diffusion-Model/bin/python -c "
 import torchvision.datasets as datasets
 datasets.MNIST(root='.', download=True)
 "
