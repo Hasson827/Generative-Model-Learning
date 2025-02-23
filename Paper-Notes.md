@@ -89,8 +89,7 @@ $$
 
 $$
 q(x_{t}|x_{0}) = \sqrt{\overline\alpha_{t}}x_{0} \,+\, \sqrt{1-\overline\alpha_{t}}\,\epsilon
-\\
-\sim \mathcal{N}(x_{t},\sqrt{\overline\alpha_{t}}x_{0},(1-\overline\alpha_{t})I)
+\,\sim\, \mathcal{N}(x_{t},\sqrt{\overline\alpha_{t}}x_{0},(1-\overline\alpha_{t})I)
 $$
 
 ## 反向扩散过程
@@ -169,7 +168,7 @@ $$
 - 我们对对数中的分子分母都根据其定义进行展开，可以得到：
 
 $$
-\log\left( \frac{q(x_{1:T}|x_{0})}{p_{\theta}(x_{0:T})} \right) 
+\log\left( \frac{q(x_{1:T}|x_{0})}{p_{\theta}(x_{0:T})} \right)
 = \log\left( \frac{\textstyle \prod_{t=1}^{T}q(x_{t}|x_{t-1})}{p(x_{T})\textstyle \prod_{t=1}^{T}p_{\theta}(x_{t-1}|x_{t})} \right)
 = \log\left( \frac{\textstyle \prod_{t=1}^{T}q(x_{t}|x_{t-1})}{\textstyle \prod_{t=1}^{T}p_{\theta}(x_{t-1}|x_{t})} \right)-\log \left( p(x_{T}) \right)
 $$
@@ -177,7 +176,7 @@ $$
 - 利用对数性质，将 $\prod$ 移到对数外变成 $\sum$
 
 $$
-原式 = \sum_{t=1}^{T}\log \left( \frac{q(x_{t}|x_{t-1})}{p_{\theta}(x_{t-1}|x_{t})} \right) - \log \left( p(x_{T}) \right) 
+原式 = \sum_{t=1}^{T}\log \left( \frac{q(x_{t}|x_{t-1})}{p_{\theta}(x_{t-1}|x_{t})} \right) - \log \left( p(x_{T}) \right)
 = \sum_{t=2}^{T}\log \left( \frac{q(x_{t}|x_{t-1})}{p_{\theta}(x_{t-1}|x_{t})} \right)+ \log\left( \frac{q(x_{1}|x_{0})}{p_{\theta}(x_{0}|x_{1})} \right) - \log \left( p(x_{T}) \right)
 $$
 
@@ -208,11 +207,54 @@ $$
 - 二、三两项消去后可得到
 
 $$
-原式 = \sum_{t=2}^{T}\log \left( \frac{q(x_{t-1}|x_{t},x_{0})}{p_{\theta}(x_{t-1}|x_{t})} \right) + \log\left( \frac{q(x_{T}|x_{0})}{p(x_{T })} \right) - \log(p_{\theta}(x_{0}|x_{1})) 
+原式 = \sum_{t=2}^{T}\log \left( \frac{q(x_{t-1}|x_{t},x_{0})}{p_{\theta}(x_{t-1}|x_{t})} \right) + \log\left( \frac{q(x_{T}|x_{0})}{p(x_{T })} \right) - \log(p_{\theta}(x_{0}|x_{1}))
 $$
 
-- 我们能够将第二项看作一个KL散度，也就是 $D_{KL}(q(x_{T}|x_{0})||p(x_{T}))$ ，而由于q只是一个前向传播过程且 $p(x_{T})$ 只是一个服从高斯正太分布的随机分布，没有任何可以学习的参数，所以它是一个定量，完全可以被忽略。
+- 我们能够将第一项和第二项都看作KL散度，即
 
-# 四篇论文的不同改进之处
+$$
+原式 = \sum_{t=2}^{T}D_{KL}(q(x_{t-1}|x_{t},x_{0})||p_{\theta}(x_{t-1}|x_{t})) + D_{KL}(q(x_{T}|x_{0})||p(x_{T})) - \log(p_{\theta}(x_{0}|x_{1}))
+$$
 
-# 总结
+- 而由于 $q$ 只是一个前向传播过程且 $p(x_{T})$ 只是一个服从高斯正太分布的随机分布，几乎没有可以学习的参数，所以第二项是一个很小的量，完全可以被忽略。
+- 我们知道 $q$ 和 $p$ 都服从正态分布，且正态分布中的方差被固定为 $\beta I$ ，因此我们可以得到以下等式；
+
+$$
+p(x_{t-1}|x_{t}) \sim \mathcal{N}(x_{t-1},\mu_{\theta}(x_{t},t),\beta I)
+\\
+q(x_{t-1}|x_{t},x_{0}) \sim \mathcal{N}(x_{t-1},\tilde\mu_{t}(x_{t},x_{0}),\tilde\beta_{t} I)
+$$
+
+其中
+$$
+\tilde\mu_{t}(x_{t},x_{0}) = \frac{\sqrt{\alpha_{t}}\,(1-\overline \alpha_{t-1})}{1-\overline \alpha_{t}}x_{t} + \frac{\sqrt{\overline\alpha_{t-1}}\beta_{t}}{1-\overline\alpha_{t}}x_{0}
+$$
+
+- 由前文中得到的 $x_{t} = \sqrt{\overline\alpha_{t}}x_{0} \,+\, \sqrt{1-\overline\alpha_{t}}\,\epsilon$ 可以反推得到 $x_{0} = \frac{1}{\sqrt{\overline\alpha_{t}}}(x_{t}-\sqrt{1-\overline\alpha_{t}}\epsilon)$ ，将其带入原式，最终可得：
+
+$$
+\tilde\mu_{t} = \frac{1}{\sqrt{\alpha_{t}}}(x_{t}-\frac{\beta_{t}}{\sqrt{1-\overline\alpha_{t}}}\epsilon)
+$$
+
+- 作者决定采用两个均值之间的均方误差作为损失函数，也就是
+
+$$
+L_{t} = \frac{1}{2\sigma_{t}^{2}}\left| \tilde\mu_{t}(x_{t},x_{0}) - \mu_{\theta}(x_{t},t) \right| ^{2}
+$$
+
+- 而 $\tilde\mu_{t}$ 和 $\mu_{\theta}$ 两个式子除了一个 $\epsilon$ 和 $\epsilon_{\theta}$ 的区别之外完全相同，并且作者通过实验发现省略前面的系数实际上训练效果更好，所以损失函数实际上可以化简为预测 $\epsilon$ ，也就是噪声，即
+
+$$
+L_{t} = \left| \epsilon - \epsilon_{\theta}(x_{t},t ) \right| ^{2}
+$$
+
+- 最后，再把 $x_{t}$ 用 $x_{0}$ 表示，我们能够得到：
+
+$$
+L_{t} = \left| \epsilon - \epsilon_{\theta}(\sqrt{\overline\alpha_{t}}x_{0} + \sqrt{1-\overline\alpha_{t}}\epsilon\,,t ) \right| ^{2}
+$$
+
+# OpenAi两篇论文的不同改进之处
+
+1. 重新开始考虑方差
+2. 将噪声的大小由线形增大改为cosine形式（详见**Book_Notes/Diffusers实战.ipynb**）
