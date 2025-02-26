@@ -1,11 +1,56 @@
 # Probabilistic Distribution
 
-## 二元变量（0-1变量）
+## 二进制变量（0-1变量）
 
-考虑一个二进制随机变量 $x \in $
+考虑一个二进制随机变量 $x \in \left\{ 0,1 \right\}$ ，其取1的概率为 $\mu \in [0,1]$ ，则我们能够给出下式：
+
+$$
+\begin{aligned}
+p(x=1\,|\,\mu) &= \mu \\
+p(x=0\,|\,\mu) &= 1-\mu
+\end{aligned}
+$$
+
+即在给定 $\mu$ ，也就是已知 $\mu$ 的情况下，我们能够知道 $p(x=1)=\mu$ 且 $p(x=0)=1-\mu$ ，这是十分简单且显然的事情。
+
+于是我们能够将上述两式统一得到**伯努利分布(Bernoulli Distribution)**
 
 $$
 Bern(x|\mu) = \mu^{x}(1-\mu)^{1-x}
+$$
+
+并且十分容易可证明它是归一化的，且其均值和方差由下式给出：
+
+$$
+\begin{aligned}
+E[x] &= \mu
+\\
+var[x] &= \mu (1-\mu)
+\end{aligned}
+$$
+
+现在假设我们有一个数据集 $\mathcal{D} = \left\{ x_{1},\dots,x_{N} \right\}$ 并且每个样本之间相互独立，那么我们可以得到其似然函数
+
+$$
+p(\mathcal{D} | \mu) = \prod_{n=1}^{N}p(x_{n}|\mu) = \prod_{n=1}^{N}\mu^{x_{n}}(1-\mu)^{x_{n}}
+$$
+
+我们要将似然函数最大化，等价于将对数似然函数最大化，因此我们需要最大化以下函数：
+
+$$
+\ln p(\mathcal{D} | \mu) =\sum_{n=1}^{N} \ln p(x_{n}|\mu) = \sum_{n=1}^{N} x_{n}\ln\mu \,+\, (1-x_{n}) \ln (1-\mu)
+$$
+
+将该函数对 $\mu$ 求导可求出最大似然估计：
+
+$$
+\mu_{ML} = \frac{1}{N} \sum_{n=1}^{N} x_{n}
+$$
+
+将测试时 $x=1$ 的次数设为 $m$ ，则原式可以化为：
+
+$$
+\mu_{ML} = \frac{m}{N}
 $$
 
 ### $\beta$ 分布
