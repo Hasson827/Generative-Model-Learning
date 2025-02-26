@@ -567,7 +567,9 @@ $$
 $$
 \text{KL}(p\|q) = \int p(\mathbf{x}) \ln \left( \frac{p(\mathbf{x})}{q(\mathbf{x}|\boldsymbol{\theta})} \right) d\mathbf{x}.
 $$
+
 展开后：
+
 $$
 \text{KL}(p\|q) = \int p(\mathbf{x}) \ln p(\mathbf{x}) \, d\mathbf{x} - \int p(\mathbf{x}) \ln q(\mathbf{x}|\boldsymbol{\theta}) \, d\mathbf{x}.
 $$
