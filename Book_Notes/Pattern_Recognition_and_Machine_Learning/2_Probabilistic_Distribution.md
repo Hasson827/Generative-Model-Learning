@@ -2,6 +2,8 @@
 
 ## 二进制变量（0-1变量）
 
+### 基本形式
+
 考虑一个二进制随机变量 $x \in \left\{ 0,1 \right\}$ ，其取1的概率为 $\mu \in [0,1]$ ，则我们能够给出下式：
 
 $$
@@ -28,6 +30,8 @@ E[x] &= \mu
 var[x] &= \mu (1-\mu)
 \end{aligned}
 $$
+
+### 似然函数
 
 现在假设我们有一个数据集 $\mathcal{D} = \left\{ x_{1},\dots,x_{N} \right\}$ 并且每个样本之间相互独立，那么我们可以得到其似然函数
 
@@ -71,7 +75,7 @@ $$
 \begin{aligned}
 E[m] &= \sum_{m=0}^{N}mBin(m|\mu,N) = \mu N
 \\
-var[m] &= \sum_{m=0}^{N}(m-E[m])^{2}Bin(m|\mu,N) = N\mu(1-\mu) 
+var[m] &= \sum_{m=0}^{N}(m-E[m])^{2}Bin(m|\mu,N) = N\mu(1-\mu)
 \end{aligned}
 $$
 
@@ -166,12 +170,109 @@ $$
 - 连续性：二项分布是离散的，描述具体的成功次数；$\beta$ 分布是连续的，描述 $p$ 的不确定性。它们通过贝叶斯更新连接起来。
 - 直觉：这就像你在掷硬币时，先凭感觉猜正面的概率，然后根据实际掷的结果调整猜测，最后得到一个更靠谱的概率分布。
 
-## 多项式变量
+## 多元离散变量
+
+### 基本形式
+
+首先考虑多元变量的表示问题，例如如果变量由 $K$ 个可能值？
+
+- 第一种可能是每一个可能值对应 $1 \dots K$ 中的一种，这实际上是不可行的，因为这样很难表示变量之间可能存在的相互关系
+- 第二种可能是把每一个样本对应到一个含有 $k$ 个元素的列向量，称为 "1-of-K scheme" ，具体映射方式如下：
+
+现在抛掷了一枚骰子，由于它具有六种可能性，所以每抛一次（一个样本）就对应一个含有六个元素的列向量 $\mathbf{x}$ ，如果一次骰子投出 3 ，那么对应的样本如下：
+
+$$
+\mathbf{x} = (0,0,1,0,0,0)^{T}
+$$
+
+明确以上表达方式后，我们就能够表达多元离散变量的概率分布
 
 假设 $\mathbf{x} \in \left\{ 0,1,\dots,N \right\}$
 
 $$
-p(\mathbf{x | \mu}) = \prod_{k=1}^{K}(\mu_{k})^{x_{k}}
+\begin{aligned}
+p(\mathbf{x | \mu}) &= \prod_{k=1}^{K}(\mu_{k})^{x_{k}}
+\\
+\mathbf{\mu} &= (\mu_{1},\dots,\mu_{K}) ^{T}
+\end{aligned}
+$$
+
+其中
+
+- $\mu_{k} \ge 0$
+- $\textstyle \sum_{k}\mu_{k} = 1$
+
+其均值可用以下方式表述：
+
+$$
+E[\mathbf{x}|\mathbf{\mu}] = \sum_{\mathbf{x}}p(\mathbf{x|\mu})\mathbf{x} = (\mu_{1},\dots,\mu_{M})^{T} = \mathbf{\mu}
+$$
+
+### 似然函数
+
+假设现在有一个数据集 $\mathcal{D} = \left\{  x_{1},\dots,x_{N} \right\}$ ，那么我们可以给出其似然函数：
+
+$$
+p(\mathcal{D}|\mathbf{\mu}) = \prod_{n=1}^{N} \prod_{k=1}^{K}\mu_{k}^{x_{nk}} = \prod_{k=1}^{K} \mu_{k}^{(\textstyle \sum_{n}x_{nk})} = \prod_{k=1}^{K}\mu_{k}^{m_{k}}
+$$
+
+参考以下矩阵可能会好理解一些：
+
+$$
+\begin{bmatrix}
+x_{11}&x_{12}&\dots&x_{1K}\\
+x_{21}&x_{22}&\dots&x_{2K}\\
+\vdots&\vdots&\ddots&\vdots\\
+x_{N1}&x_{N2}&\dots&x_{NK}
+\end{bmatrix}
+$$
+
+其中
+
+- 每一行是一个样本点，每一列代表一种可能性
+- 可以理解为 $x_{n}$ 是行号，而 $\mu_{k}$ 是列号
+- 公式中的 $m_{k}$ 指的是每一列的元素值之和
+
+对似然函数取对数并对 $\mu$ 求偏导，由于此处 $\mu$ 有归一化要求，因此我们采用拉格朗日乘子方法：
+
+$$
+\ln p(\mathcal{D}|\mu) = \sum_{k=1}^{K}m_{k} \ln\mu_{k}
+$$
+
+最大化以下表达式：
+
+$$
+L(\mu,\lambda) = \sum_{k=1}^{K}m_{k} \ln\mu_{k} + \lambda \left( \sum_{k=1}^{K}\mu_{k} \,-\,1 \right)
+$$
+
+即：
+
+$$
+\forall k \in \left\{ 1,\dots,K \right\} \,\,,\,\,\frac{\partial L(\mu,\lambda)}{\partial \mu_{k}} = \frac{m_{k}}{\mu_{k}}+\lambda = 0
+\\[10pt]
+\forall k \in \left\{ 1,\dots,K \right\} \,\,,\,\,\mu_{k} = -\frac{m_{k}}{\lambda}
+\\[10pt]
+1 = \sum_{k=1}^{K}\mu_{k} = -\frac{1}{\lambda}\sum_{k=1}^{K}m_{k} = -\frac{N}{\lambda}
+\\[10pt]
+\lambda = -N
+\\[10pt]
+\mu_{k} = \frac{m_{k}}{N}
+$$
+
+取第 $k$ 个值的概率也就是第 $k$ 个量出现的比例
+
+### 多项式分布(Multinomial Distribution)
+
+$$
+Mult(m_{1},m_{2},\dots,m_{K}|\mu,N) = \binom{N}{m_{1}m_{2}\dots m_{K}}\prod_{k=1}^{K}\mu_{k}^{m_{k}}
+$$
+
+其中
+
+$$
+\binom{N}{m_{1}m_{2}\dots m_{K}} = \frac{N!}{m_{1}!m_{2}!\dots m_{K}!}
+\\[10pt]
+\sum_{k=1}^{K}m_{k} = N
 $$
 
 ### 狄利克雷分布
