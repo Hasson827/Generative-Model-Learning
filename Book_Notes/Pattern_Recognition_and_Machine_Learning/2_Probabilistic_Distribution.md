@@ -499,7 +499,11 @@ $$
 \mathbf{y} = (y_{1},\dots,y_{D})^{T} = \mathbf{U(x-\mu)}
 $$
 
-如果所有特征值 λi 都是正的，那么这些表面代表椭球体，它们的中心在 μ 上，它们的轴沿 ui 方向，并且比例因子在 λ1/2 i 给出的轴方向上
+如果所有特征值 $\lambda_{i}$ 都是正的，那么这些表面代表椭球体，它们的中心在 $\mu$ 上，它们的轴沿 $u_{i}$ 方向，并且比例因子在 $\frac{\lambda_{i}}{2}$ 给出的轴方向上。
+
+<center>
+<img src="../imgs/Gaussian_Distribution.png" width="400">
+</center>
 
 ### 条件高斯分布
 
