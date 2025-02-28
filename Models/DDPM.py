@@ -11,7 +11,7 @@ class ResidualBlock(nn.Module):
     残差块 - U-Net的基本构建块
     包含时间嵌入和残差连接以帮助信息流动和梯度传播
     
-    残差连接是ResNet中的关键创新，通过让网络学习残差映射而非直接映射，
+    残差连接是ResNet中的关键创新,通过让网络学习残差映射而非直接映射,
     有效缓解了深度网络中的梯度消失问题，使得训练更加稳定高效
     """
     def __init__(self, in_channels, out_channels, time_emb_dim):
@@ -79,7 +79,7 @@ class DownSample(nn.Module):
     """
     下采样模块 - 使用步长为2的卷积减小特征图尺寸
     
-    在U-Net架构中，下采样用于逐步减小空间维度并增加通道数，
+    在U-Net架构中,下采样用于逐步减小空间维度并增加通道数,
     从而在编码过程中捕获更抽象和语义级的特征
     """
     def __init__(self, channels):
@@ -112,7 +112,7 @@ class UpSample(nn.Module):
     """
     上采样模块 - 使用转置卷积增大特征图尺寸
     
-    在U-Net架构的解码器部分，上采样用于恢复空间分辨率，
+    在U-Net架构的解码器部分,上采样用于恢复空间分辨率,
     配合跳跃连接还原高分辨率的特征图
     """
     def __init__(self, channels):
@@ -125,7 +125,7 @@ class UpSample(nn.Module):
         super().__init__()
         # 步长为2的4x4转置卷积，将特征图尺寸加倍
         # 转置卷积（反卷积）可以学习上采样的最佳方式，而不是简单的插值
-        self.conv = nn.ConvTranspose2d(channels, channels, 4, stride=2, padding=1)
+        self.conv = nn.ConvTranspose2d(channels, channels, kernel_size=4, stride=2, padding=1)
 
     def forward(self, x):
         """
@@ -351,7 +351,7 @@ class DDPM(nn.Module):
         beta_start=1e-4,      # β调度的起始值
         beta_end=0.02,        # β调度的结束值
         num_timesteps=1000,   # 扩散过程的总时间步数
-        device="cuda" if torch.cuda.is_available() else "cpu"  # 计算设备
+        device="cuda" if torch.cuda.is_available() else "mps" if torch.backends.mps.is_available() else "cpu"  # 计算设备
     ):
         """
         初始化DDPM模型
@@ -386,10 +386,19 @@ class DDPM(nn.Module):
         self.log_one_minus_alphas_cumprod = torch.log(1. - self.alphas_cumprod)  # log(1-α_hat)
         self.sqrt_recip_alphas = torch.sqrt(1. / self.alphas)  # 1/√α
         
-        # 计算后验方差 - q(x_{t-1}|x_t,x_0)分布的方差
-        # 用于反向扩散过程中的采样
-        # 注意：这里的previous实现不完整，应该是获取t-1时刻的alphas_cumprod
-        self.posterior_variance = self.betas * (1. - self.alphas_cumprod.previous(0)) / (1. - self.alphas_cumprod)
+        # 修复后验方差计算
+        # 原来的代码有问题: self.posterior_variance = self.betas * (1. - self.alphas_cumprod.previous(0)) / (1. - self.alphas_cumprod)
+        # 修复：计算正确的后验方差
+        self.posterior_variance = self.betas * (1. - self.alphas_cumprod[:-1]) / (1. - self.alphas_cumprod[1:])
+        # 为t=0的情况添加一个值
+        self.posterior_variance = torch.cat([torch.tensor([self.betas[0]], device=device), self.posterior_variance])
+        
+        # 计算后验均值系数
+        self.posterior_mean_coef1 = torch.sqrt(self.alphas_cumprod[1:]) * self.betas / (1. - self.alphas_cumprod[1:])
+        self.posterior_mean_coef2 = torch.sqrt(self.alphas[1:]) * (1. - self.alphas_cumprod[:-1]) / (1. - self.alphas_cumprod[1:])
+        # 为t=0的情况添加占位符
+        self.posterior_mean_coef1 = torch.cat([torch.tensor([0.0], device=device), self.posterior_mean_coef1])
+        self.posterior_mean_coef2 = torch.cat([torch.tensor([1.0], device=device), self.posterior_mean_coef2])
         
     def get_index_from_list(self, vals, t, x_shape):
         """
