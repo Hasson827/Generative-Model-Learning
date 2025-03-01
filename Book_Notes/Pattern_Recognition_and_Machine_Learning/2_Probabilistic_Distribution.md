@@ -60,7 +60,9 @@
 ---
 
 ### 小结
+
 想象你在玩一个侦探游戏：  
+
 - 你先有个怀疑名单（先验分布）。  
 - 然后找到一些线索（似然函数）。  
 - 最后根据线索调整怀疑对象（后验分布）。  
@@ -505,7 +507,59 @@ $$
 <img src="../imgs/Gaussian_Distribution.png" width="400">
 </center>
 
+原本我们是在 $x$ 中讨论高斯分布，现在我们把坐标轴换成 $y$ ，这样我们可以得到一个雅可比矩阵(Jacobian Matrix)
+
+$$
+J = \frac{\partial x_{i}}{\partial y_{i}} = U_{ji}
+$$
+
+其中 $U_{ji}$ 是矩阵 $\mathbf{U^{T}}$ 中的元素。利用矩阵 $\mathbf{U}$ 的正交性，我们可以得到雅可比矩阵 $\mathbf{J}$ 的行列式的平方。
+
+$$
+|\mathbf{J}|^{2} = |\mathbf{U^{T}}|^{2} = |\mathbf{U^{T}}||\mathbf{U}| = |\mathbf{I}| = 1
+$$
+
+因此协方差矩阵的行列式为1，同时我们可以将 $\Sigma$ 的行列式表示为其特征值的乘积，即：
+
+$$
+\begin{aligned}
+|\Sigma| &=  |\mathbf{U\Lambda U^{T}}|
+\\
+&= \mathbf{|U||\Lambda||U^{T}|}
+\\
+&= \mathbf{|\Lambda|}
+\\
+&= \prod_{j=1}^{D}\lambda_{j}
+\end{aligned}
+$$
+
+因此在 $y$ 坐标轴中，高斯分布变为以下形式：
+
+$$
+p(\mathbf{y}) = p(\mathbf{x})|\mathbf{J}| = \prod_{j=1}^{D}\frac{1}{(2\pi \lambda)^{\frac{1}{2}}} \exp\left\{ -\frac{y_{j}^{2}}{2\lambda_{j}} \right\}
+$$
+
+这实际上是 $D$ 个相互独立的单变量的高斯分布的乘积
+
 ### 条件高斯分布
+
+假设我们有一个联合高斯分布 $\mathcal{N}(\mathbf{x}|\boldsymbol{\mu}, \boldsymbol{\Sigma})$，其中 $\mathbf{x}$ 可以被分成两个部分 $\mathbf{x}_a$ 和 $\mathbf{x}_b$，对应的均值和协方差矩阵也可以相应地分成：
+
+$$ \boldsymbol{\mu} = \begin{bmatrix} \boldsymbol{\mu}a \ \boldsymbol{\mu}b \end{bmatrix} \quad \text{和} \quad \boldsymbol{\Sigma} = \begin{bmatrix} \boldsymbol{\Sigma}{aa} & \boldsymbol{\Sigma}{ab} \ \boldsymbol{\Sigma}{ba} & \boldsymbol{\Sigma}{bb} \end{bmatrix} $$
+
+其中 $\boldsymbol{\mu}_a$ 和 $\boldsymbol{\mu}_b$ 分别是 $\mathbf{x}a$ 和 $\mathbf{x}b$ 的均值向量，$\boldsymbol{\Sigma}{aa}$ 和 $\boldsymbol{\Sigma}{bb}$ 分别是 $\mathbf{x}a$ 和 $\mathbf{x}b$ 的协方差矩阵，$\boldsymbol{\Sigma}{ab}$ 和 $\boldsymbol{\Sigma}{ba}$ 是 $\mathbf{x}_a$ 和 $\mathbf{x}_b$ 之间的协方差矩阵。
+
+我们感兴趣的是在给定 $\mathbf{x}_b$ 的情况下，$\mathbf{x}_a$ 的条件分布。条件高斯分布的均值和协方差矩阵可以通过以下公式计算得到：
+
+$$ \boldsymbol{\mu}{a|b} = \boldsymbol{\mu}a + \boldsymbol{\Sigma}{ab} \boldsymbol{\Sigma}{bb}^{-1} (\mathbf{x}_b - \boldsymbol{\mu}_b) $$
+
+$$ \boldsymbol{\Sigma}{a|b} = \boldsymbol{\Sigma}{aa} - \boldsymbol{\Sigma}{ab} \boldsymbol{\Sigma}{bb}^{-1} \boldsymbol{\Sigma}_{ba} $$
+
+其中，$\boldsymbol{\mu}{a|b}$ 是条件均值，$\boldsymbol{\Sigma}{a|b}$ 是条件协方差矩阵。
+
+因此，条件高斯分布 $\mathbf{x}a | \mathbf{x}b$ 仍然是一个高斯分布，其均值和协方差矩阵分别为 $\boldsymbol{\mu}{a|b}$ 和 $\boldsymbol{\Sigma}{a|b}$。
+
+总结来说，条件高斯分布的关键在于利用联合分布的均值和协方差矩阵，通过矩阵运算得到条件分布的均值和协方差矩阵。这种方法在多元统计分析和机器学习中非常有用，特别是在贝叶斯推理和高斯过程等领域。
 
 ### 边际高斯分布
 
