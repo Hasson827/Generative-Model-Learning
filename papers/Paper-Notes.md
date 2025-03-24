@@ -7,7 +7,7 @@
 - The essential idea is to systematically and slowly destroy structure in a data distribution through an iterative **forward diffusion process**. We then learn a **reverse diffusion process** that restores structure in data, yielding a highly flexible and tractable generative model of the data.
 - 其关键理念在于通过一个迭代式的**正向扩散流程**，有系统且逐步地破坏数据分布中的结构。随后，我们学习一种**反向扩散流程**，用于恢复数据中的结构，由此生成一个高度灵活且易于处理的关于数据的生成模型。
 
-<img src="../imgs/Basic_Idea.png">
+<img src="../imgs/Basic_Idea.png" style="zoom:20%;" >
 
 ## 2. 前向过程 (Foward Process)
 
@@ -66,23 +66,27 @@ $$
 然后我们可以利用重参数化技巧，也就是 $\mathcal{N}(\mu,\sigma^{2}) = \mu + \sigma\cdot\epsilon$ 来重写 $q(x_{t}|x_{t-1})$，其中 $\epsilon \sim \mathcal{N}(0,1)$
 
 $$
-q(x_{t}|x_{t-1}) = \mathcal{N}(x_{t},\sqrt{1-\beta_{t}}\,x_{t-1},\beta_{t}I)
-\\
-= \sqrt{1-\beta_{t}}\,x_{t-1}\,+\,\sqrt{\beta_{t}}\,\epsilon
-\\
-= \sqrt{\alpha_{t}}x_{t-1} \,+\, \sqrt{1-\alpha_{t}}\,\epsilon
+\begin{aligned}
+q(x_{t}|x_{t-1}) &= \mathcal{N}(x_{t},\sqrt{1-\beta_{t}}\,x_{t-1},\beta_{t}I)
+\\[10pt]
+&= \sqrt{1-\beta_{t}}\,x_{t-1}\,+\,\sqrt{\beta_{t}}\,\epsilon
+\\[10pt]
+&= \sqrt{\alpha_{t}}x_{t-1} \,+\, \sqrt{1-\alpha_{t}}\,\epsilon
+\end{aligned}
 $$
 
 再将 $q(x_{t-1}|x_{t-2})$ 以类似的形式写出来，在上式中将 $x_{t-1}$ 替换为 $x_{t-2}$ 的表达式，可得：
 
 $$
-q(x_{t}|x_{t-1}) = \sqrt{\alpha_{t}}x_{t-1} \,+\, \sqrt{1-\alpha_{t}}\,\epsilon
+\begin{aligned}
+q(x_{t}|x_{t-1}) &= \sqrt{\alpha_{t}}x_{t-1} \,+\, \sqrt{1-\alpha_{t}}\,\epsilon
+\\[5pt]
+&= \sqrt{\alpha_{t}\alpha_{t-1}}x_{t-2} \,+\, \sqrt{1-\alpha_{t}\alpha_{t-1}}\,\epsilon
+\\[5pt]
+&= \sqrt{\alpha_{t}\alpha_{t-1}\alpha_{t-2}}x_{t-3} \,+\, \sqrt{1-\alpha_{t}\alpha_{t-1}\alpha_{t-2}}\,\epsilon
 \\
-= \sqrt{\alpha_{t}\alpha_{t-1}}x_{t-2} \,+\, \sqrt{1-\alpha_{t}\alpha_{t-1}}\,\epsilon
-\\
-= \sqrt{\alpha_{t}\alpha_{t-1}\alpha_{t-2}}x_{t-3} \,+\, \sqrt{1-\alpha_{t}\alpha_{t-1}\alpha_{t-2}}\,\epsilon
-\\
-···
+&=\,\dots
+\end{aligned}
 $$
 
 如此反复迭代，最终可以得到 $x_{t}$ 和 $x_{0}$ 之间的关系：
@@ -115,7 +119,7 @@ $$
 
 但是 $x_{0}$ 的概率很难计算，因为它取决于 $x_{0}$ 之前所有的时间步的输入，即 $x_{1:T}$
 
-因此我们决定计算该函数的变分下界，即
+因此我们决定计算该函数的变分上界，即
 
 $$
 -\log{p_{\theta}(x_{0})} \le -\log{p_{\theta}(x_{0})} \,+\, D_{KL}(q(x_{1:T}|x_{0})||p_{\theta}(x_{1:T}|x_{0}))
@@ -142,13 +146,11 @@ $$
 - 对数中的分母可以利用贝叶斯公式变为以下形式：
 
 $$
-p_{\theta}(x_{1:T}|x_{0}) = \frac{p_{\theta}(x_{0}|x_{1:T})p_{\theta}(x_{1:T})}{p_{\theta}(x_{0})}
-$$
-
-- 而这个贝叶斯公式中的分子又可以由全概率公式合并为：
-
-$$
-p_{\theta}(x_{0}|x_{1:T})p_{\theta}(x_{1:T}) = p_{\theta}(x_{0},x_{1:T}) = p_{\theta}(x_{0:T})
+\begin{aligned}
+p_{\theta}(x_{1:T}|x_{0}) &= \frac{p_{\theta}(x_{0}|x_{1:T})p_{\theta}(x_{1:T})}{p_{\theta}(x_{0})}
+\\[10pt]
+&=\frac{p_{\theta}(x_{0:T})}{p_{\theta}(x_{0})}
+\end{aligned}
 $$
 
 - 所以原来的对数形式就可以写成：
@@ -168,19 +170,19 @@ $$
 - 我们对对数中的分子分母都根据其定义进行展开，可以得到：
 
 $$
+\begin{aligned}
 \log\left( \frac{q(x_{1:T}|x_{0})}{p_{\theta}(x_{0:T})} \right)
-= \log\left( \frac{\textstyle \prod_{t=1}^{T}q(x_{t}|x_{t-1})}{p(x_{T})\textstyle \prod_{t=1}^{T}p_{\theta}(x_{t-1}|x_{t})} \right)
-= \log\left( \frac{\textstyle \prod_{t=1}^{T}q(x_{t}|x_{t-1})}{\textstyle \prod_{t=1}^{T}p_{\theta}(x_{t-1}|x_{t})} \right)-\log \left( p(x_{T}) \right)
+&= \log\left( \frac{\textstyle \prod_{t=1}^{T}q(x_{t}|x_{t-1})}{p(x_{T})\textstyle \prod_{t=1}^{T}p_{\theta}(x_{t-1}|x_{t})} \right)
+\\[10pt]
+&= \log\left( \frac{\textstyle \prod_{t=1}^{T}q(x_{t}|x_{t-1})}{\textstyle \prod_{t=1}^{T}p_{\theta}(x_{t-1}|x_{t})} \right)-\log \left( p(x_{T}) \right)
+\\[10pt]
+&=\sum_{t=1}^{T}\log \left( \frac{q(x_{t}|x_{t-1})}{p_{\theta}(x_{t-1}|x_{t})} \right) - \log \left( p(x_{T}) \right)
+\\[10pt]
+&= \sum_{t=2}^{T}\log \left( \frac{q(x_{t}|x_{t-1})}{p_{\theta}(x_{t-1}|x_{t})} \right)+ \log\left( \frac{q(x_{1}|x_{0})}{p_{\theta}(x_{0}|x_{1})} \right) - \log \left( p(x_{T}) \right)
+\end{aligned}
 $$
 
-- 利用对数性质，将 $\prod$ 移到对数外变成 $\sum$
-
-$$
-原式 = \sum_{t=1}^{T}\log \left( \frac{q(x_{t}|x_{t-1})}{p_{\theta}(x_{t-1}|x_{t})} \right) - \log \left( p(x_{T}) \right)
-= \sum_{t=2}^{T}\log \left( \frac{q(x_{t}|x_{t-1})}{p_{\theta}(x_{t-1}|x_{t})} \right)+ \log\left( \frac{q(x_{1}|x_{0})}{p_{\theta}(x_{0}|x_{1})} \right) - \log \left( p(x_{T}) \right)
-$$
-
-- 利用贝叶斯公式，将 $\sum$ 中所有的分母都该写成如下形式：
+- 利用贝叶斯公式，将 $\sum$ 中所有的分子都该写成如下形式：
 
 $$
 q(x_{t}|x_{t-1}) = \frac{q(x_{t-1}|x_{t})q(x_{t})}{q(x_{t-1})} = \frac{q(x_{t-1}|x_{t},x_{0})q(x_{t}|x_{0})}{q(x_{t-1}|x_{0})}
@@ -189,25 +191,15 @@ $$
 - 那么再代回原式后得到：
 
 $$
-原式 = \sum_{t=2}^{T}\log \left( \frac{q(x_{t-1}|x_{t},x_{0})q(x_{t}|x_{0})}{p_{\theta}(x_{t-1}|x_{t})q(x_{t-1}|x_{0})} \right)+ \log\left( \frac{q(x_{1}|x_{0})}{p_{\theta}(x_{0}|x_{1})} \right) - \log \left( p(x_{T}) \right)
-$$
-
-- 我们将 $\sum$ 中的log函数拆开得到
-
-$$
-原式 = \sum_{t=2}^{T}\log \left( \frac{q(x_{t-1}|x_{t},x_{0})}{p_{\theta}(x_{t-1}|x_{t})} \right) + \sum_{t=2}^{T}\log \left( \frac{q(x_{t}|x_{0})}{q(x_{t-1}|x_{0})} \right) + \log\left( \frac{q(x_{1}|x_{0})}{p_{\theta}(x_{0}|x_{1})} \right) - \log \left( p(x_{T}) \right)
-$$
-
-- 第二个 $\sum$ 中的式子展开后，中间项会全部抵消，最后留下：
-
-$$
-原式 = \sum_{t=2}^{T}\log \left( \frac{q(x_{t-1}|x_{t},x_{0})}{p_{\theta}(x_{t-1}|x_{t})} \right) + \log\left( \frac{q(x_{T}|x_{0})}{q(x_{1}|x_{0})} \right) + \log\left( \frac{q(x_{1}|x_{0})}{p_{\theta}(x_{0}|x_{1})} \right) - \log \left( p(x_{T}) \right)
-$$
-
-- 二、三两项消去后可得到
-
-$$
-原式 = \sum_{t=2}^{T}\log \left( \frac{q(x_{t-1}|x_{t},x_{0})}{p_{\theta}(x_{t-1}|x_{t})} \right) + \log\left( \frac{q(x_{T}|x_{0})}{p(x_{T })} \right) - \log(p_{\theta}(x_{0}|x_{1}))
+\begin{aligned}
+原式 &= \sum_{t=2}^{T}\log \left( \frac{q(x_{t-1}|x_{t},x_{0})q(x_{t}|x_{0})}{p_{\theta}(x_{t-1}|x_{t})q(x_{t-1}|x_{0})} \right)+ \log\left( \frac{q(x_{1}|x_{0})}{p_{\theta}(x_{0}|x_{1})} \right) - \log \left( p(x_{T}) \right)
+\\[10pt]
+&= \sum_{t=2}^{T}\log \left( \frac{q(x_{t-1}|x_{t},x_{0})}{p_{\theta}(x_{t-1}|x_{t})} \right) + \sum_{t=2}^{T}\log \left( \frac{q(x_{t}|x_{0})}{q(x_{t-1}|x_{0})} \right) + \log\left( \frac{q(x_{1}|x_{0})}{p_{\theta}(x_{0}|x_{1})} \right) - \log \left( p(x_{T}) \right)
+\\[10pt]
+&= \sum_{t=2}^{T}\log \left( \frac{q(x_{t-1}|x_{t},x_{0})}{p_{\theta}(x_{t-1}|x_{t})} \right) + \log\left( \frac{q(x_{T}|x_{0})}{q(x_{1}|x_{0})} \right) + \log\left( \frac{q(x_{1}|x_{0})}{p_{\theta}(x_{0}|x_{1})} \right) - \log \left( p(x_{T}) \right)
+\\[10pt]
+&= \sum_{t=2}^{T}\log \left( \frac{q(x_{t-1}|x_{t},x_{0})}{p_{\theta}(x_{t-1}|x_{t})} \right) + \log\left( \frac{q(x_{T}|x_{0})}{p(x_{T })} \right) - \log(p_{\theta}(x_{0}|x_{1}))
+\end{aligned}
 $$
 
 - 我们能够将第一项和第二项都看作KL散度，即
@@ -220,9 +212,11 @@ $$
 - 我们知道 $q$ 和 $p$ 都服从正态分布，且正态分布中的方差被固定为 $\beta I$ ，因此我们可以得到以下等式；
 
 $$
-p(x_{t-1}|x_{t}) \sim \mathcal{N}(x_{t-1},\mu_{\theta}(x_{t},t),\beta I)
-\\
-q(x_{t-1}|x_{t},x_{0}) \sim \mathcal{N}(x_{t-1},\tilde\mu_{t}(x_{t},x_{0}),\tilde\beta_{t} I)
+\begin{aligned}
+p(x_{t-1}|x_{t}) &\sim \mathcal{N}(x_{t-1},\mu_{\theta}(x_{t},t),\beta I)
+\\[5pt]
+q(x_{t-1}|x_{t},x_{0}) &\sim \mathcal{N}(x_{t-1},\tilde\mu_{t}(x_{t},x_{0}),\tilde\beta_{t} I)
+\end{aligned}
 $$
 
 其中
@@ -245,13 +239,11 @@ $$
 - 而 $\tilde\mu_{t}$ 和 $\mu_{\theta}$ 两个式子除了一个 $\epsilon$ 和 $\epsilon_{\theta}$ 的区别之外完全相同，并且作者通过实验发现省略前面的系数实际上训练效果更好，所以损失函数实际上可以化简为预测 $\epsilon$ ，也就是噪声，即
 
 $$
-L_{t} = \left| \epsilon - \epsilon_{\theta}(x_{t},t ) \right| ^{2}
-$$
-
-- 最后，再把 $x_{t}$ 用 $x_{0}$ 表示，我们能够得到：
-
-$$
-L_{t} = \left| \epsilon - \epsilon_{\theta}(\sqrt{\overline\alpha_{t}}x_{0} + \sqrt{1-\overline\alpha_{t}}\epsilon\,,t ) \right| ^{2}
+\begin{aligned}
+L_{t} &= \left| \epsilon - \epsilon_{\theta}(x_{t},t ) \right| ^{2}
+\\[10pt]
+&= \left| \epsilon - \epsilon_{\theta}(\sqrt{\overline\alpha_{t}}x_{0} + \sqrt{1-\overline\alpha_{t}}\epsilon\,,t ) \right| ^{2}
+\end{aligned}
 $$
 
 # OpenAi两篇论文的不同改进之处
