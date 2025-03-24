@@ -7,7 +7,7 @@
 - The essential idea is to systematically and slowly destroy structure in a data distribution through an iterative **forward diffusion process**. We then learn a **reverse diffusion process** that restores structure in data, yielding a highly flexible and tractable generative model of the data.
 - 其关键理念在于通过一个迭代式的**正向扩散流程**，有系统且逐步地破坏数据分布中的结构。随后，我们学习一种**反向扩散流程**，用于恢复数据中的结构，由此生成一个高度灵活且易于处理的关于数据的生成模型。
 
-<img src="imgs/Basic_Idea.png">
+<img src="../imgs/Basic_Idea.png">
 
 ## 2. 前向过程 (Foward Process)
 
