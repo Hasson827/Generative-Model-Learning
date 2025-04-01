@@ -4,41 +4,29 @@
 
 ## 1. 概率基本规则
 
-### 离散变量加和公式
+### 加和公式
 
 $$
 p(X) = \sum_{Y}p(X,Y)
-$$
-
-### 离散变量乘积公式
-
-$$
-p(X,Y) = p(Y|X)p(X) = p(X|Y)p(Y)
-$$
-
-### 连续变量加和公式
-
-$$
+\\[10pt]
 p(x) = \int p(x,y)dy
 $$
 
-### 连续变量乘积公式
+### 乘积公式
 
 $$
+p(X,Y) = p(Y|X)p(X) = p(X|Y)p(Y)
+\\[10pt]
 p(x,y) = p(y|x)p(x) = p(x|y)p(y)
 $$
 
 ## 2. 期望和方差
 
-### 离散变量期望
+### 期望
 
 $$
 E[f] = \sum_{x}p(x)f(x)
-$$
-
-### 连续变量期望
-
-$$
+\\[10pt]
 E[f] = \int p(x)f(x)dx
 $$
 
@@ -74,15 +62,13 @@ $$
 
 $$
 \mathcal{N}(x|\mu,\sigma^{2}) = \frac{1}{\sqrt{2\pi \sigma^{2}}}e^{-\frac{(x-\mu)^2}{2\sigma^{2}}}
-$$
-
-### 期望和方差
-
-$$
+\\[10pt]
 E[x] = \mu
 \\
 var[x] = \sigma^{2}
 $$
+
+
 
 ### 高维高斯分布
 
@@ -110,13 +96,13 @@ $$
 在实践中，最大化似然函数的对数更方便。因为对数是其参数的单调递增函数，所以函数对数的最大化等同于函数本身的最大化。取对数不仅简化了后续的数学分析，而且在数值上也有帮助，因为大量小概率的乘积很容易使计算机的数值精度下溢，而这可以通过计算对数概率的总和来解决。
 
 $$
-\log L(\mu, \sigma^2) = \log \left( \prod_{i=1}^{n} \mathcal{N}(x_i|\mu,\sigma^{2}) \right) = \sum_{i=1}^{n} \log \left( \frac{1}{\sqrt{2\pi \sigma^{2}}}e^{-\frac{(x_i-\mu)^2}{2\sigma^{2}}} \right)
-$$
-
-进一步简化得到：
-
-$$
-\log L(\mu, \sigma^2) = -\frac{N}{2} \log (2\pi) - N\log (\sigma) - \frac{1}{2\sigma^2} \sum_{i=1}^{n} (x_i - \mu)^2
+\begin{aligned}
+\log L(\mu, \sigma^2) &= \log \left( \prod_{i=1}^{n} \mathcal{N}(x_i|\mu,\sigma^{2}) \right) 
+\\[10pt]
+&= \sum_{i=1}^{n} \log \left( \frac{1}{\sqrt{2\pi \sigma^{2}}}e^{-\frac{(x_i-\mu)^2}{2\sigma^{2}}} \right)
+\\[10pt]
+&= -\frac{N}{2} \log (2\pi) - N\log (\sigma) - \frac{1}{2\sigma^2} \sum_{i=1}^{n} (x_i - \mu)^2
+\end{aligned}
 $$
 
 将该函数视为 $\mu$ 的函数并求最大值，可得此时 $\mu$ 的取值为：
@@ -146,19 +132,13 @@ $$
 > **证明：**
 >
 > $$
-> E[\sigma_{ML}^{2}] = E\left[\frac{1}{N}\sum_{n=1}^{N}(x_{n}-\mu_{ML})^{2}\right]
-> $$
->
-> 由于 $\mu_{ML}$ 是样本均值，可以写成：
->
-> $$
-> E[\sigma_{ML}^{2}] = E\left[\frac{1}{N}\sum_{n=1}^{N}\left((x_{n}-\mu) - (\mu_{ML}-\mu)\right)^{2}\right]
-> $$
->
-> 展开平方项：
->
-> $$
-> E[\sigma_{ML}^{2}] = E\left[\frac{1}{N}\sum_{n=1}^{N}\left((x_{n}-\mu)^{2} - 2(x_{n}-\mu)(\mu_{ML}-\mu) + (\mu_{ML}-\mu)^{2}\right)\right]
+> \begin{aligned}
+> E[\sigma_{ML}^{2}] &= E\left[\frac{1}{N}\sum_{n=1}^{N}(x_{n}-\mu_{ML})^{2}\right]
+>\\[10pt]
+> &=E\left[\frac{1}{N}\sum_{n=1}^{N}\left((x_{n}-\mu) - (\mu_{ML}-\mu)\right)^{2}\right]
+>\\[10pt]
+> &= E\left[\frac{1}{N}\sum_{n=1}^{N}\left((x_{n}-\mu)^{2} - 2(x_{n}-\mu)(\mu_{ML}-\mu) + (\mu_{ML}-\mu)^{2}\right)\right]
+> \end{aligned}
 > $$
 >
 > 由于 $E[x_{n}-\mu] = 0$ 和 $E[(x_{n}-\mu)(\mu_{ML}-\mu)] = 0$，可以简化为：
@@ -181,7 +161,7 @@ $$
 
 ## 5. 从概率角度看曲线拟合
 
-曲线拟合问题的目标是能够根据一组训练数据，给定输入变量 $x$ 的某个新值，对目标变量 $$t$ 进行预测，这些数据包含 $N$ 个输入值 $x = （x_{1},···,x_{N}) ^{T}$ 及其相应的目标值 $t = （t_{1},···,t_{N})^{T}$。我们可以使用概率分布来表示我们对目标变量值的不确定性。为此，我们将假设，给定 x 的值，相应的 t 值具有高斯分布，其平均值等于 $y(x,w) = \sum_{j=0}^{N}w_{j}x^{j}$ 给出的多项式曲线的 $y(x,w)$ 的值。因此我们有：
+曲线拟合问题的目标是能够根据一组训练数据，给定输入变量 $x$ 的某个新值，对目标变量 $t$ 进行预测，这些数据包含$N$个输入值 $x = (x_{1},···,x_{N}) ^{T}$ 及其相应的目标值 $t = (t_{1},···,t_{N})^{T}$。我们可以使用概率分布来表示我们对目标变量值的不确定性。为此，我们将假设，给定 x 的值，相应的 t 值具有高斯分布，其平均值等于 $y(x,w) = \sum_{j=0}^{N}w_{j}x^{j}$ 给出的多项式曲线的 $y(x,w)$ 的值。因此我们有：
 
 $$
 p(t|x,w,\beta) = \mathcal{N}(t|y(x,w),\beta^{-1})
@@ -198,7 +178,11 @@ $$
 将其变为对数似然函数：
 
 $$
-\log p(\mathbf{t}|\mathbf{x},\mathbf{w},\beta) = \sum_{n=1}^{N} \log \mathcal{N}(t_{n}|y(x_{n},\mathbf{w}),\beta^{-1}) = -\frac{N}{2} \log (2\pi) + \frac{N}{2} \log \beta - \frac{\beta}{2} \sum_{n=1}^{N} (t_{n} - y(x_{n},\mathbf{w}))^2
+\begin{aligned}
+\log p(\mathbf{t}|\mathbf{x},\mathbf{w},\beta) &= \sum_{n=1}^{N} \log \mathcal{N}(t_{n}|y(x_{n},\mathbf{w}),\beta^{-1}) 
+\\[10pt]
+&= -\frac{N}{2} \log (2\pi) + \frac{N}{2} \log \beta - \frac{\beta}{2} \sum_{n=1}^{N} (t_{n} - y(x_{n},\mathbf{w}))^2
+\end{aligned}
 $$
 
 首先考虑确定多项式系数的最大似然解，该系数将用 $w_{ML}$ 表示。这些是通过以 $w$ 为自变量而将对数似然函数最大化来确定的。为此，我们可以省略上式右侧的前两项，因为它们与 $w$ 无关。此外，我们还注意到，用正常数系数缩放对数似然不会改变 $w$ 在函数最大时的取值，因此我们可以将系数 $\frac{β}{2}$ 替换为 $\frac{1}{2}$ 。最后，我们可以等效地最小化负对数似然，而不是最大化对数似然。因此，我们看到，就确定$w$而言，最大化似然等同于最小化平方和误差函数。因此，平方和误差函数是在高斯噪声分布的假设下最大化似然的结果。
@@ -285,9 +269,7 @@ $$
 
 $$
 m(x) = \beta \phi(x)^T \mathbf{S} \sum_{n=1}^N \phi(x_n) t_n
-$$
-
-$$
+\\[10pt]
 s^2(x) = \beta^{-1} + \phi(x)^T \mathbf{S} \phi(x)
 $$
 
@@ -380,19 +362,15 @@ $$
 离散分布的熵为：
 
 $$
-H_\Delta = -\sum_i \underbrace{p(x_i)\Delta}_{\text{离散概率}} \ln \left( p(x_i)\Delta \right).
-$$
-
-展开后：
-
-$$
-H_\Delta = -\sum_i p(x_i)\Delta \ln p(x_i) - \sum_i p(x_i)\Delta \ln \Delta.
-$$
-
-由于 $\sum_i p(x_i)\Delta = 1$（概率归一化），第二项简化为：
-
-$$
--\ln \Delta \sum_i p(x_i)\Delta = -\ln \Delta.
+\begin{aligned}
+H_\Delta &= -\sum_i \underbrace{p(x_i)\Delta}_{\text{离散概率}} \ln \left( p(x_i)\Delta \right)
+\\[10pt]
+&=-\sum_i p(x_i)\Delta \ln p(x_i) - \sum_i p(x_i)\Delta \ln \Delta
+\\[10pt]
+&= -\sum_i p(x_i)\Delta \ln p(x_i) - \ln \Delta \sum_i p(x_i)\Delta
+\\[10pt]
+&= -\sum_i p(x_i)\Delta \ln p(x_i) - \ln \Delta
+\end{aligned}
 $$
 
 因此，熵表达式为：
@@ -454,13 +432,13 @@ $$
 相对熵用于衡量两个概率分布 $p(x)$ 和 $q(x)$ 之间的差异。假设我们用 $q(x)$ 近似真实分布 $p(x)$，则在使用 $q(x)$ 编码 $x$ 时，所需的额外信息量（以 nats 为单位）为：
 
 $$
-\text{KL}(p\|q) = - \int p(x) \ln q(x) \, dx - \left( - \int p(x) \ln p(x) \, dx \right).
+\text{KL}(p\parallel q) = - \int p(x) \ln q(x) \, dx - \left( - \int p(x) \ln p(x) \, dx \right).
 $$
 
 展开后得到：
 
 $$
-\text{KL}(p\|q) = - \int p(x) \ln \left\{ \frac{q(x)}{p(x)} \right\} \, dx.
+\text{KL}(p\parallel q) = - \int p(x) \ln \left\{ \frac{q(x)}{p(x)} \right\} \, dx.
 $$
 
 这就是 **Kullback-Leibler 散度** 的定义。
@@ -492,25 +470,13 @@ $$
 将 $x = \frac{q(x)}{p(x)}$ 代入，得到：
 
 $$
--\ln\left( \int p(x) \cdot \frac{q(x)}{p(x)} \, dx \right) \leq \int p(x) \cdot \left( -\ln \frac{q(x)}{p(x)} \right) \, dx.
-$$
-
-化简左边：
-
-$$
--\ln\left( \int q(x) \, dx \right) = -\ln(1) = 0.
-$$
-
-右边即为 KL 散度的定义：
-
-$$
-\int p(x) \cdot \left( -\ln \frac{q(x)}{p(x)} \right) \, dx = \text{KL}(p\|q).
-$$
-
-因此，得到：
-
-$$
-0 \leq \text{KL}(p\|q).
+\begin{aligned}
+-\ln\left( \int p(x) \cdot \frac{q(x)}{p(x)} \, dx \right) &\leq \int p(x) \cdot \left( -\ln \frac{q(x)}{p(x)} \right)dx
+\\[10pt]
+0 &\leq \int p(x) \cdot \left( -\ln \frac{q(x)}{p(x)} \right)dx
+\\[10pt]
+0 &\leq \text{KL}(p\parallel q)
+\end{aligned}
 $$
 
 等号成立当且仅当 $\frac{q(x)}{p(x)} = 1$，即 $p(x) = q(x)$。
@@ -565,13 +531,11 @@ $$
 - **优化目标**：通过最小化 KL 散度 $\text{KL}(p\|q)$ 来确定参数 $\boldsymbol{\theta}$。由于 $p(\mathbf{x})$ 未知，我们使用训练数据 $\{\mathbf{x}_n\}_{n=1}^N$ ，这些数据是从 $p(x)$ 中独立同分布采样得到的。
   
 $$
-\text{KL}(p\|q) = \int p(\mathbf{x}) \ln \left( \frac{p(\mathbf{x})}{q(\mathbf{x}|\boldsymbol{\theta})} \right) d\mathbf{x}.
-$$
-
-展开后：
-
-$$
-\text{KL}(p\|q) = \int p(\mathbf{x}) \ln p(\mathbf{x}) \, d\mathbf{x} - \int p(\mathbf{x}) \ln q(\mathbf{x}|\boldsymbol{\theta}) \, d\mathbf{x}.
+\begin{aligned}
+\text{KL}(p\|q) &= \int p(\mathbf{x}) \ln \left( \frac{p(\mathbf{x})}{q(\mathbf{x}|\boldsymbol{\theta})} \right) d\mathbf{x}
+\\[10pt]
+&= \int p(\mathbf{x}) \ln p(\mathbf{x}) \, d\mathbf{x} - \int p(\mathbf{x}) \ln q(\mathbf{x}|\boldsymbol{\theta}) \, d\mathbf{x}
+\end{aligned}
 $$
 
 其中，第一项是 $p(\mathbf{x})$ 的熵，与 $\boldsymbol{\theta}$ 无关；第二项是交叉熵，依赖于 $\boldsymbol{\theta}$。因此我们将第一项删去之后得到
@@ -579,9 +543,9 @@ $$
 $$
 \text{KL}(p\|q) \simeq - \sum_{n=1}^N \left\{ \ln q(\mathbf{x}_n|\boldsymbol{\theta}) + \ln p(\mathbf{x}_n) \right\}.
 $$
-  
+
 其中，第二项与 $\boldsymbol{\theta}$ 无关，因此最小化 KL 散度等价于最大化似然函数：
-  
+
 $$
 \mathcal{L}(\boldsymbol{\theta}) = \sum_{n=1}^N \ln q(\mathbf{x}_n|\boldsymbol{\theta})
 $$

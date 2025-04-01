@@ -29,13 +29,13 @@
 
 ### 三者之间的关系
 
-可以用一个公式简单表达它们的关系（这就是贝叶斯定理）：  
-**后验分布 ∝ 先验分布 × 似然函数**  
-（“∝”表示“正比于”，实际还需要一个归一化常数，但我们先忽略细节。）
+可以用一个公式简单表达它们的关系（这就是贝叶斯定理）：
+**后验分布 ∝ 先验分布 × 似然函数**
+（“∝”表示“正比于”，实际还需要一个归一化常数，但我们先忽略细节）
 
-- **先验分布**是你开始时的信念（80%准时）。  
-- **似然函数**是数据对这些信念的“打分”（迟到这件事更支持哪种假设）。  
-- **后验分布**是你根据数据调整后的新信念（综合后可能是50%准时）。  
+- **先验分布**是你开始时的信念（80%准时）
+- **似然函数**是数据对这些信念的“打分”（迟到这件事更支持哪种假设）
+- **后验分布**是你根据数据调整后的新信念（综合后可能是50%准时）  
 
 用生活化的比喻来说：  
 
@@ -45,29 +45,9 @@
 
 ### 各自的对应
 
-1. **先验分布**：  
-   - 对应的是**你的主观知识或假设**。  
-   - 它是起点，反映你对未知量（参数）的预期。
-
-2. **似然函数**：  
-   - 对应的是**观测数据**。  
-   - 它是桥梁，告诉你数据如何支持或反驳你的假设。
-
-3. **后验分布**：  
-   - 对应的是**更新后的结论**。  
-   - 它是终点，综合了先验和数据，给你一个更贴近真相的答案。
-
----
-
-### 小结
-
-想象你在玩一个侦探游戏：  
-
-- 你先有个怀疑名单（先验分布）。  
-- 然后找到一些线索（似然函数）。  
-- 最后根据线索调整怀疑对象（后验分布）。  
-
-先验是你的起点，似然是你的证据，后验是你的结论。它们通过贝叶斯推理紧密相连，帮助你从不确定性走向更确定的答案。希望这个解释清楚又好懂！有什么疑问吗？
+1. **先验分布**：对应的是**你的主观知识或假设**。  它是起点，反映你对未知量（参数）的预期。
+2. **似然函数**：对应的是**观测数据**。  它是桥梁，告诉你数据如何支持或反驳你的假设。
+3. **后验分布**：对应的是**更新后的结论**。  它是终点，综合了先验和数据，给你一个更贴近真相的答案。
 
 ## 二进制变量（0-1变量）
 
@@ -132,12 +112,6 @@ $$
 Bin(m|\mu ,N) = \binom{N}{m} \mu^{m}(1-\mu)^{N-m}
 $$
 
-其中
-
-$$
-\binom{N}{m} = \frac{N!}{(N-m)!m!}
-$$
-
 其均值和方差由下式给出：
 
 $$
@@ -147,8 +121,6 @@ E[m] &= \sum_{m=0}^{N}mBin(m|\mu,N) = \mu N
 var[m] &= \sum_{m=0}^{N}(m-E[m])^{2}Bin(m|\mu,N) = N\mu(1-\mu)
 \end{aligned}
 $$
-
-都是基础知识，不详细证明
 
 ### $\beta$ 分布
 
@@ -545,15 +517,22 @@ $$
 
 假设我们有一个联合高斯分布 $\mathcal{N}(\mathbf{x}|\boldsymbol{\mu}, \boldsymbol{\Sigma})$，其中 $\mathbf{x}$ 可以被分成两个部分 $\mathbf{x}_a$ 和 $\mathbf{x}_b$，对应的均值和协方差矩阵也可以相应地分成：
 
-$$ \boldsymbol{\mu} = \begin{bmatrix} \boldsymbol{\mu}a \ \boldsymbol{\mu}b \end{bmatrix} \quad \text{和} \quad \boldsymbol{\Sigma} = \begin{bmatrix} \boldsymbol{\Sigma}{aa} & \boldsymbol{\Sigma}{ab} \ \boldsymbol{\Sigma}{ba} & \boldsymbol{\Sigma}{bb} \end{bmatrix} $$
-
-其中 $\boldsymbol{\mu}_a$ 和 $\boldsymbol{\mu}_b$ 分别是 $\mathbf{x}a$ 和 $\mathbf{x}b$ 的均值向量，$\boldsymbol{\Sigma}{aa}$ 和 $\boldsymbol{\Sigma}{bb}$ 分别是 $\mathbf{x}a$ 和 $\mathbf{x}b$ 的协方差矩阵，$\boldsymbol{\Sigma}{ab}$ 和 $\boldsymbol{\Sigma}{ba}$ 是 $\mathbf{x}_a$ 和 $\mathbf{x}_b$ 之间的协方差矩阵。
+$$
+\boldsymbol{\mu} = \begin{bmatrix} \boldsymbol{\mu}a \ \boldsymbol{\mu}b \end{bmatrix} \quad 
+\\[10pt]
+\quad \boldsymbol{\Sigma} = \begin{bmatrix} \boldsymbol{\Sigma}{aa} & \boldsymbol{\Sigma}{ab} \\ \boldsymbol{\Sigma}{ba} & \boldsymbol{\Sigma}{bb} \end{bmatrix}
+$$
+其中 $\boldsymbol{\mu}_a$ 和 $\boldsymbol{\mu}_b$ 分别是 $\mathbf{x}a$ 和 $\mathbf{x}b$ 的均值向量，$\boldsymbol{\Sigma}{aa}$ 和 $\boldsymbol{\Sigma}{bb}$ 分别是 $\mathbf{x}_a$ 和 $\mathbf{x}_b$ 的协方差矩阵，$\boldsymbol{\Sigma}{ab}$ 和 $\boldsymbol{\Sigma}{ba}$ 是 $\mathbf{x}_a$ 和 $\mathbf{x}_b$ 之间的协方差矩阵。
 
 我们感兴趣的是在给定 $\mathbf{x}_b$ 的情况下，$\mathbf{x}_a$ 的条件分布。条件高斯分布的均值和协方差矩阵可以通过以下公式计算得到：
 
-$$ \boldsymbol{\mu}{a|b} = \boldsymbol{\mu}a + \boldsymbol{\Sigma}{ab} \boldsymbol{\Sigma}{bb}^{-1} (\mathbf{x}_b - \boldsymbol{\mu}_b) $$
+$$
+\boldsymbol{\mu}{a|b} = \boldsymbol{\mu}a + \boldsymbol{\Sigma}{ab} \boldsymbol{\Sigma}{bb}^{-1} (\mathbf{x}_b - \boldsymbol{\mu}_b)
+$$
 
-$$ \boldsymbol{\Sigma}{a|b} = \boldsymbol{\Sigma}{aa} - \boldsymbol{\Sigma}{ab} \boldsymbol{\Sigma}{bb}^{-1} \boldsymbol{\Sigma}_{ba} $$
+$$
+\boldsymbol{\Sigma}{a|b} = \boldsymbol{\Sigma}{aa} - \boldsymbol{\Sigma}{ab} \boldsymbol{\Sigma}{bb}^{-1} \boldsymbol{\Sigma}_{ba}
+$$
 
 其中，$\boldsymbol{\mu}{a|b}$ 是条件均值，$\boldsymbol{\Sigma}{a|b}$ 是条件协方差矩阵。
 
