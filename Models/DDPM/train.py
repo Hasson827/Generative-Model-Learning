@@ -7,6 +7,10 @@ from tqdm import tqdm
 import numpy as np
 from model import UNet,DDPM
 
+device = torch.device("cuda" if torch.cuda.is_available() 
+                      else "mps" if torch.mps.is_available()
+                      else "cpu")
+
 transforms = transforms.Compose([
     transforms.Resize(32),
     transforms.ToTensor(),
@@ -16,14 +20,11 @@ transforms = transforms.Compose([
 train_dataset = datasets.MNIST(root='../data', train=True, download=True, transform=transforms)
 train_loader = DataLoader(train_dataset, batch_size=64, shuffle=True)
 
-device = torch.device("cuda" if torch.cuda.is_available() 
-                      else "mps" if torch.mps.is_available()
-                      else "cpu")
 model = UNet(input_channels=1,hidden_dims=64).to(device)
 ddpm = DDPM(n_steps=1000).to(device)
 
-lr = 1e-4
-num_epochs = 100
+lr = 3e-4
+num_epochs = 10
 
 optimizer = torch.optim.Adam(model.parameters(),lr=lr)
 loss_fn = nn.MSELoss()
@@ -31,13 +32,14 @@ loss_fn = nn.MSELoss()
 for epoch in range(num_epochs):
     model.train()
     epoch_loss = 0
-    progress_bar = tqdm(train_loader,desc=f"Epoch {epoch+1}/{num_epochs}")
-    
-    for batch in progress_bar:
+    for batch_idx, (images, labels) in tqdm(enumerate(train_loader), total=len(train_loader)):
         
-        images = batch[0].to(device)
+        images = images.to(device)
+        condition = torch.zeros(images.shape[0],10)
+        condition.scatter_(1, labels.unsqueeze(1), 1)
+        condition = condition.to(torch.long).to(device)
         batch_size = images.shape[0]
-        
+
         # 随机采样时间步
         t = torch.randint(0,1000,(batch_size,)).to(device)
         
@@ -45,7 +47,7 @@ for epoch in range(num_epochs):
         noisy_images, noise = ddpm.add_noise(images,t)
         
         # 预测噪声
-        predicted_noise = model(noisy_images,t)
+        predicted_noise = model(noisy_images,t,condition)
         
         # 计算损失
         loss = loss_fn(predicted_noise, noise)
@@ -65,22 +67,23 @@ for epoch in range(num_epochs):
 # 生成样本
 model.eval()
 
-n_samples = 4
-with torch.inference_mode():
-    samples = ddpm.sample(model,n_samples=4,img_size=32,device=device)
-
-samples = (samples.clamp(-1,1) + 1) / 2 # Normalize to [0, 1]
-samples = samples.cpu().permute(0,2,3,1).numpy() # Change to (N,C,H,W) format
-
-grid_size = int(np.sqrt(n_samples))
-fig,axes = plt.subplots(grid_size,grid_size,figsize=(10,10))
-
-for i,ax in enumerate(axes.flatten()):
-    if i < n_samples:
-        if samples.shape[-1] == 1:
-            ax.imshow(samples[i].squeeze(),cmap='gray')
-        else:
-            ax.imshow(samples[i])
-    ax.axis('off')
+plt.figure(figsize=(15,16))
+for digit in range(10):
+    plt.subplot(2,5,digit+1)
+    with torch.inference_mode():
+        
+        condition = torch.zeros(1,10)
+        condition[:,digit] = 1
+        condition = condition.to(torch.long).to(device)
+        
+        samples = ddpm.sample(model,1,32,device,condition)
+        
+    img = samples[0].cpu().permute(1,2,0).numpy()
+    img = (img.squeeze()+1)/2 # 反归一化到[0,1]
+    
+    plt.imshow(img,cmap='gray')
+    plt.title(f"Digit: {digit}")
+    plt.axis('off')
 plt.tight_layout()
+plt.savefig("generated_samples.png")
 plt.show()
