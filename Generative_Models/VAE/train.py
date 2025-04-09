@@ -13,11 +13,11 @@ device = torch.device("cuda" if torch.cuda.is_available()
 
 input_dim = 784 # 28*28
 condition_dim = 10 # 对于one-hot编码的数字标签
-h_dim = 200
+h_dim = 300
 z_dim = 20
-num_epochs = 20
+num_epochs = 30
 batch_size = 128
-lr = 1e-4 # Karpathy constant
+lr = 3e-4 # Karpathy constant
 
 # Dataset Loading
 dataset = datasets.MNIST(root="../data/", download=True,transform=transforms.ToTensor())
@@ -31,7 +31,7 @@ def train(model,dataloader,optimizer,epochs):
     model.train()
     for epoch in range(epochs):
         total_loss = 0
-        for batch_idx,(data,labels) in enumerate(dataloader):
+        for (data,labels) in dataloader:
             # 将图像展平为784维向量
             data_flattened = data.view(-1,input_dim).to(device)
             
