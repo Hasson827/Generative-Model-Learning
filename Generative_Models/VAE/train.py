@@ -1,91 +1,89 @@
 import torch
-import torchvision.datasets as datasets
-from torch import nn,optim
+import torch.optim as optim
+import torch.nn.functional as F
 from model import ConditionalVAE
-from torchvision import transforms
 from torch.utils.data import DataLoader
+from torchvision import datasets, transforms
 import matplotlib.pyplot as plt
-import numpy as np
+
+# 数据预处理
+transform = transforms.Compose([
+    transforms.ToTensor(),
+])
+
+# 加载MNIST数据集
+train_dataset = datasets.MNIST(
+    root='../data/',
+    train=True,
+    transform=transform,
+    download=True
+)
+
+test_dataset = datasets.MNIST(
+    root='../data/',
+    train=False,
+    transform=transform,
+    download=True
+)
+
+# 创建数据加载器
+batch_size = 128
+train_loader = DataLoader(
+    dataset=train_dataset,
+    batch_size=batch_size,
+    shuffle=True
+)
+
+test_loader = DataLoader(
+    dataset=test_dataset,
+    batch_size=batch_size,
+    shuffle=False
+)
 
 device = torch.device("cuda" if torch.cuda.is_available() 
                       else "mps" if torch.mps.is_available()
                       else "cpu")
 
-input_dim = 784 # 28*28
-condition_dim = 10 # 对于one-hot编码的数字标签
-h_dim = 300
-z_dim = 20
-num_epochs = 30
-batch_size = 128
-lr = 3e-4 # Karpathy constant
+# 初始化模型
+input_dim = 784  # 28x28 = 784
+condition_dim = 10  # 10个数字类别
+cvae = ConditionalVAE(input_dim=input_dim, condition_dim=condition_dim).to(device)
+optimizer = optim.Adam(cvae.parameters(), lr=1e-3)
 
-# Dataset Loading
-dataset = datasets.MNIST(root="../data/", download=True,transform=transforms.ToTensor())
-train_loader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
-
-# Model, Loss and Optimizer
-model = ConditionalVAE(input_dim,condition_dim, h_dim, z_dim).to(device)
-optimizer = optim.Adam(model.parameters(), lr=lr)
-
-def train(model,dataloader,optimizer,epochs):
-    model.train()
-    for epoch in range(epochs):
-        total_loss = 0
-        for (data,labels) in dataloader:
-            # 将图像展平为784维向量
-            data_flattened = data.view(-1,input_dim).to(device)
-            
-            # 将标签转换为one-hot编码
-            condition = torch.zeros(data.shape[0],condition_dim)
-            condition.scatter_(1, labels.unsqueeze(1),1)
-            condition = condition.to(device)
-            
-            # 前向传播  
-            reconstruction, mu, log_var = model(data_flattened,condition)
-            
-            # 计算损失
-            loss = model.loss_function(reconstruction, data_flattened, mu, log_var)
-            
-            # 反向传播和优化
-            optimizer.zero_grad()
-            loss.backward()
-            torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)  # 限制梯度范数
-            optimizer.step()
-            total_loss += loss.item()
-            
-        print(f"Epoch {epoch+1}/{epochs}, Loss: {total_loss/len(dataloader.dataset):.4f}")
-
-def generate_samples(model,digits=range(10),n_samples_per_digit=1):
-    model.eval()
-    samples = []
+# 训练循环
+num_epochs = 20
+for epoch in range(num_epochs):
+    train_loss = 0
+    for batch_idx, (data, targets) in enumerate(train_loader):
+        data = data.view(data.size(0), -1)  # 展平图像
+        data = data.to(device)
+        
+        # 将标签转换为one-hot编码
+        targets_onehot = F.one_hot(targets, num_classes=condition_dim).float().to(device)
+        
+        optimizer.zero_grad()
+        recon_batch, mu, log_var = cvae(data, targets_onehot)
+        loss, recon_loss, kl_loss = cvae.loss_function(data, recon_batch, mu, log_var)
+        
+        loss.backward()
+        optimizer.step()
+        
+        train_loss += loss.item()
     
-    with torch.inference_mode():
-        for digit in digits:
-            # 为每个数字创建条件向量
-            condition = torch.zeros(n_samples_per_digit,condition_dim)
-            condition[:,digit] = 1
-            condition = condition.to(device)
-            
-            # 从模型中采样
-            digit_samples = model.sample(n_samples_per_digit,condition)
-            samples.append(digit_samples)
+    print(f'====> Epoch: {epoch} Average loss: {train_loss / len(train_loader.dataset):.4f}')
     
-    return torch.cat(samples,dim=0)
-
-print(f"Training on {device}...")
-train(model, train_loader, optimizer, num_epochs)
-
-# 生成样本
-plt.figure(figsize=(15, 3))
-samples = generate_samples(model, num_samples_per_digit=1)
-samples = samples.cpu().view(-1, 28, 28).numpy()
-
-for i, img in enumerate(samples):
-    plt.subplot(1, 10, i+1)
-    plt.imshow(img, cmap="gray")
-    plt.axis("off")
-    plt.title(f"Digit: {i}")
-
-plt.tight_layout()
-plt.savefig("vae_samples.png")
-plt.show()
+# 生成一些样本（每个数字生成一个样本）
+with torch.no_grad():
+    for digit in range(10):
+        # 创建one-hot编码
+        c = F.one_hot(torch.tensor([digit]), num_classes=condition_dim).float().to(device)
+        sample = cvae.sample(1, c).cpu().view(28, 28)
+            
+        plt.subplot(2, 5, digit+1)
+        plt.imshow(sample.numpy(), cmap='gray')
+        plt.title(f'Digit {digit}')
+        plt.axis('off')
+        
+    plt.tight_layout()
+    plt.savefig(f'outputs.png')
+    plt.close()

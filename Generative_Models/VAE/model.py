@@ -2,120 +2,96 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-# Input img -> Hidden dim -> mean,std -> Reparameterized trick -> Decoder -> Output img
 class ConditionalVAE(nn.Module):
-    def __init__(self, input_dim, condition_dim, h_dim=200, z_dim=20):
+    def __init__(self, input_dim, condition_dim, h_dim=400, z_dim=20):
         """
+        条件VAE模型
         Args:
-            input_dim (int): Dimension of the input image
-            conditional_dim (int): Dimension of the condition
-            h_dim (int): Dimension of the hidden layer
-            z_dim (int): Dimension of the latent variable
+            input_dim (int): 输入维度
+            condition_dim (int): 条件维度(类别的one-hot编码维度)
+            h_dim (int): 隐藏层维度
+            z_dim (int): 潜在空间维度
         """
         super().__init__()
         
-        # 保存参数作为实例属性
-        self.input_dim = input_dim
-        self.condition_dim = condition_dim
-        self.h_dim = h_dim
-        self.z_dim = z_dim
-        
-        # 输入图像的编码器
-        self.input_encoder = nn.Sequential(
-            nn.Linear(input_dim,h_dim),
+        # 编码器（接收图像和条件）
+        self.encoder = nn.Sequential(
+            nn.Linear(input_dim + condition_dim, h_dim),
+            nn.ReLU(),
+            nn.Linear(h_dim, h_dim),
             nn.ReLU()
         )
         
-        # 条件编码器
-        self.condition_encoder = nn.Sequential(
-            nn.Linear(condition_dim,h_dim//4),
-            nn.ReLU()
-        )
+        # 均值和方差
+        self.fc_mu = nn.Linear(h_dim, z_dim)
+        self.fc_logvar = nn.Linear(h_dim, z_dim)
         
-        # 合并后的处理
-        self.combined_encoder = nn.Sequential(
-            nn.Linear(h_dim + h_dim//4, h_dim),
-            nn.ReLU()
-        )
-        
-        # 均值和方差的线性层
-        self.fc_mu = nn.Linear(h_dim,z_dim)
-        self.fc_var = nn.Linear(h_dim,z_dim)
-        
-        # 解码器
-        self.decoder_condition_encoder = nn.Sequential(
-            nn.Linear(condition_dim,h_dim//4),
-            nn.ReLU()
-        )
-        
+        # 解码器（接收潜在变量和条件）
         self.decoder = nn.Sequential(
-            nn.Linear(z_dim + h_dim//4, h_dim),
+            nn.Linear(z_dim + condition_dim, h_dim),
             nn.ReLU(),
             nn.Linear(h_dim, h_dim),
             nn.ReLU(),
             nn.Linear(h_dim, input_dim),
-            nn.Sigmoid()  # Sigmoid to ensure output is in [0, 1]
+            nn.Sigmoid()
         )
     
-    def encode(self,x,c):
-        """
-        Encode the input image x and condition c into mean and variance
-        """
-        h_x = self.input_encoder(x)
-        h_c = self.condition_encoder(c)
-        
-        # 合并特征
-        h_combined = torch.cat([h_x,h_c],dim=1)
-        h = self.combined_encoder(h_combined)
-        
-        # 均值和方差
+    def encode(self, x, c):
+        """条件编码过程"""
+        inputs = torch.cat([x, c], dim=1)
+        h = self.encoder(inputs)
         mu = self.fc_mu(h)
-        log_var = self.fc_var(h)
+        log_var = self.fc_logvar(h)
         return mu, log_var
     
-    def reparameterize(self,mu,log_var):
-        """
-        Reparameterization trick to sample from the distribution
-        """
-        std = torch.exp(0.5 * log_var)
-        eps = torch.randn_like(std)
-        return mu + eps * std
+    def reparameterize(self, mu, log_var):
+        """重参数化技巧"""
+        if self.training:
+            std = torch.exp(0.5 * log_var)
+            eps = torch.randn_like(std)
+            return mu + eps * std
+        else:
+            return mu
     
-    def decode(self,z,c):
-        """
-        Decode the latent variable z and condition c into the output image
-        """
-        # 处理条件信息
-        h_c = self.decoder_condition_encoder(c)
-        
-        # 合并潜在变量和条件信息
-        decoder_input = torch.cat([z,h_c],dim=1)
-        return self.decoder(decoder_input)
+    def decode(self, z, c):
+        """条件解码过程"""
+        inputs = torch.cat([z, c], dim=1)
+        return self.decoder(inputs)
     
-    def forward(self,x,c):
-        """
-        Forward pass through the VAE
-        """
-        mu, log_var = self.encode(x,c)
-        z = self.reparameterize(mu,log_var)
-        x_reconstructed = self.decode(z,c)
+    def forward(self, x, c):
+        """前向传播"""
+        mu, log_var = self.encode(x, c)
+        z = self.reparameterize(mu, log_var)
+        x_reconstructed = self.decode(z, c)
         return x_reconstructed, mu, log_var
     
-    def loss_function(self,x,x_reconstructed,mu,log_var):
-        """
-        Compute the loss function
-        """
-        # Binary Cross Entropy loss
-        x_reconstructed = torch.clamp(x_reconstructed, min=1e-6, max=1-1e-6)  # Avoid log(0)
-        BCE = F.binary_cross_entropy(x_reconstructed, x, reduction='sum')
-        # KL Divergence loss
-        var = torch.exp(log_var.clamp(min=-7,max=7))
-        KLD = -0.5 * torch.sum(1 + log_var - mu.pow(2) - var)
-        return BCE + KLD
+    def loss_function(self, x, x_reconstructed, mu, log_var):
+        """计算VAE损失"""
+        recon_loss = F.binary_cross_entropy(x_reconstructed, x, reduction='sum')
+        kl_loss = -0.5 * torch.sum(1 + log_var - mu.pow(2) - log_var.exp())
+        return recon_loss + kl_loss, recon_loss, kl_loss
     
-    def sample(self,num_samples,c):
-        """
-        Sample from the VAE
-        """
-        z = torch.randn(num_samples, self.z_dim).to(c.device)
-        return self.decode(z,c)
+    def sample(self, num_samples, c):
+        """给定条件c,从潜在空间采样生成新样本"""
+        z = torch.randn(num_samples, self.fc_mu.out_features).to(c.device)
+        return self.decode(z, c)
+
+if __name__ == "__main__":
+    # 测试模型
+    input_dim = 784  # 28x28
+    condition_dim = 10  # 假设有10个类别
+    model = ConditionalVAE(input_dim, condition_dim)
+    
+    # 随机输入和条件
+    x = torch.randn(64, input_dim)  # batch_size=64
+    c = torch.randn(64, condition_dim)  # batch_size=64
+    
+    # 前向传播
+    x_reconstructed, mu, log_var = model(x, c)
+    sample = model.sample(64, c)
+    
+    # 打印输出形状
+    print("Reconstructed shape:", x_reconstructed.shape)
+    print("Mu shape:", mu.shape)
+    print("Log variance shape:", log_var.shape)
+    print("Sample shape:", sample.shape)
