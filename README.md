@@ -20,5 +20,6 @@
 
 如果你有任何问题或建议，请通过以下方式联系我：
 
-* 邮箱: hongshuo.24@intl.zju.edu.cn
+* 邮箱: hongshuo.24@intl.zju.edu.cn 或 hz108@illinois.edu
 * GitHub: Hasson827
+* 微信：Hasson827624
