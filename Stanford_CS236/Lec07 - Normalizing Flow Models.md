@@ -1,4 +1,4 @@
-# Lec07 - Normalizing Flow Models
+# Lec07&08 - Normalizing Flow Models
 
 ## 对于复杂数据分布的简单先验
 
@@ -255,6 +255,22 @@ D_{KL}(s,t)=E_{\mathbf{x}\sim s}\left[ \log{s(\mathbf{x})}-\log{t(\mathbf{x})} \
 $$
 评估并优化此目标的蒙特卡罗估计值需要：
 
-- 来自学生模型（IAF）的样本$\mathbf{x}$
-- 学生模型分配给$\mathbf{x}$的密度
-- 教师模型（MAF）分配给$\mathbf{x}$的密度
+- 来自学生模型(IAF)的样本$\mathbf{x}$
+- 学生模型(IAF)中$\mathbf{x}$的概率密度分布
+- 教师模型(MAF)中$\mathbf{x}$的概率密度分布
+
+训练过程：
+
+1. 通过MLE训练教师模型(MAF)
+2. 训练学生模型(IAF)以最小化其与教师模型的KL散度
+
+评估过程：用学生模型进行评估
+
+### MintNet
+
+利用掩码卷积构建可逆的神经网络。一个常规的卷积神经网络很强大，但是它不可逆，而且计算其雅可比矩阵的行列式很难。因此我们可以利用掩码卷积（例如在自回归模型中使用卷积）
+
+<img src="/Users/hongshuo/Library/Application Support/typora-user-images/image-20250613124242420.png" alt="image-20250613124242420" style="zoom:20%;" />
+
+### Gaussianization Flows
+
