@@ -7,38 +7,16 @@ from torchvision import datasets, transforms
 import matplotlib.pyplot as plt
 
 # 数据预处理
-transform = transforms.Compose([
-    transforms.ToTensor(),
-])
+transform = transforms.ToTensor()
 
 # 加载MNIST数据集
-train_dataset = datasets.MNIST(
-    root='../data/',
-    train=True,
-    transform=transform,
-    download=True
-)
-
-test_dataset = datasets.MNIST(
-    root='../data/',
-    train=False,
-    transform=transform,
-    download=True
-)
+train_dataset = datasets.MNIST(root='../data/',train=True,transform=transform,download=True)
+test_dataset = datasets.MNIST(root='../data/',train=False,transform=transform,download=True)
 
 # 创建数据加载器
 batch_size = 128
-train_loader = DataLoader(
-    dataset=train_dataset,
-    batch_size=batch_size,
-    shuffle=True
-)
-
-test_loader = DataLoader(
-    dataset=test_dataset,
-    batch_size=batch_size,
-    shuffle=False
-)
+train_loader = DataLoader(dedataset=train_dataset,batch_size=batch_size,eshuffle=True)
+test_loader = DataLoader(dataset=test_dataset,batch_size=batch_size,shuffle=False)
 
 device = torch.device("cuda" if torch.cuda.is_available() 
                       else "mps" if torch.mps.is_available()
