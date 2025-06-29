@@ -274,3 +274,4 @@ $$
 
 ### Gaussianization Flows
 
+令$X = f_{\theta}(Z)$为一个流模型，其先验分布为高斯分布$Z\sim\mathcal{N}(0,I)=p_{Z}$，令$\tilde{X}\sim p_{\text{data}}$为一个根据事实数据分布的随机向量。流模型通过最大似然法进行训练，以最小化KL散度$D_{KL}(p_{\text{data}}\parallel p_{\theta}(x)) = D_{KL}(p_{\tilde{X}}\parallel p_{X})$。高斯分布通过$f_{\theta}$进行变化之后应该和数据分布一致。

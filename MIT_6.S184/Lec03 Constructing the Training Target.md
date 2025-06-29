@@ -3,9 +3,9 @@
 在上一节中，我们构造了流模型和扩散模型，通过模拟ODE/SDE得到轨迹$(X_t)_{0\le t\le1}$
 $$
 \begin{aligned}
-X_0\sim p_{init},dX_t &= u_{t}^{\theta}(X_t)dt
+X_0\sim p_{\text{init}},\;dX_t &= u_{t}^{\theta}(X_t)dt\quad\Longrightarrow\quad X_{1}\sim p_{\text{data}}
 \\[10pt]
-X_0\sim p_{init},dX_t &= u_{t}^{\theta}(X_t)dt+\sigma_tdW_t
+X_0\sim p_{\text{init}},\;dX_t &= u_{t}^{\theta}(X_t)dt+\sigma_tdW_t\quad\Longrightarrow\quad X_{1}\sim p_{\text{data}}
 \end{aligned}
 $$
 
@@ -22,9 +22,25 @@ $$
 
 ## 3.1 Conditional and Marginal Probability Path
 
-<img src="/Users/hongshuo/Library/Application Support/typora-user-images/image-20250328140459384.png" alt="image-20250328140459384" style="zoom:30%;" />
+**关键术语**：
 
-构造训练目标$u_t^{target}$的第一步是指定一个**概率路径 (Probability Path)**。直观地说，概率路径指定了噪声$p_{init}$和数据$p_{data}$之间的逐渐插值，具体见上图。我们将在本节中解释其构造。下面，对于一个样本$z\in R^{d}$，我们用$\delta_{z}$来表示**狄拉克$\delta$分布**。这是最简单的分布：从$\delta_{z}$中采样总是返回$z$（它是完全确定的）。**条件（插值）概率路径**是一组$R^{d}$上的分布$p_{t}(x\vert z)$，其满足以下关系：
+- Conditional: Per single data point
+- Marginal: Across distribution of data points
+
+<img src="/Users/hongshuo/Library/Application Support/typora-user-images/image-20250328140459384.png" alt="image-20250328140459384" style="zoom:20%;" />
+
+构造训练目标$u_t^{target}$的第一步是指定一个**概率路径 (Probability Path)**。直观地说，概率路径指定了噪声$p_{init}$和数据$p_{data}$之间的渐进插值，具体见上图。
+
+### 狄拉克分布
+
+对于一个样本$z\in R^{d}$，我们用$\delta_{z}$来表示**狄拉克$\delta$分布**。这是最简单的分布：从$\delta_{z}$中采样总是返回$z$，即：
+$$
+z\in R^{d},X\sim\delta(z)\Longrightarrow X=z
+$$
+
+### 条件概率路径
+
+**条件概率路径**是一组在空间$R^{d}$上的分布$p_{t}(x\vert z)$，其满足以下关系：
 $$
 p_0(\cdot\vert z) = p_{init},\;p_1(\cdot\vert z) = \delta_{z}\;\;\;\forall z\in R^{d}
 $$
@@ -37,17 +53,19 @@ $$
 - 在$t=1$时，$p_1(x\vert z)=p_{data}$，分布坍缩到$z$本身（狄拉克分布，表示确定性）。
 - 这就像一个“个性化”的生成过程：给定$z$，从噪声开始，最终精确还原$z$。
 
+### 边际概率路径
+
 **边际概率路径$p_t(x)$**
 
 - 边际概率路径是对所有可能的$z$（来自$p_{data}$）取平均的结果。
-- 计算方式：先从$p_{data}$采样一个$z$，然后通过$p_t(x\vert z)$采样$x$，得到的分布就是$p_t(x)$。
+- 计算方式：先在数据分布中采样一个$z\sim p_{\text{data}}$，然后通过$p_t(x\vert z)$采样$x$，得到的分布就是$p_t(x)$。
 - 数学上：$p_t(x)=\int{p_t(x\vert z)p_{data}(z)dz}$
 - 意义：$p_t(x)$是整个生成过程在时间$t$的总体分布，反映了从噪声到数据的全局演变。
 
 **直观理解**
 
-- 条件概率路径是“单兵作战”，针对某个$z$的生成轨迹。
-- 边际概率路径是“全局视角”，考虑所有$z$的平均效果。
+- 条件概率路径是“单兵作战”，针对某个样本$z$的生成轨迹。
+- 边际概率路径是“全局视角”，考虑所有样本$z$的平均效果。
 
 注意，我们知道怎样从$p_t$中采样，但是我们不知道$p_t(x)$的概率密度，因为积分很难处理。
 
@@ -63,65 +81,60 @@ $$
 > p_0(\cdot\vert z) &= \mathcal{N}(\alpha_0z,\beta_0^2I_d) = \mathcal{N}(0,I_d)
 > \\[5pt]
 > p_1(\cdot\vert z) &= \mathcal{N}(\alpha_1z,\beta_1^2I_d) = \delta_z
+> \\[5pt]
+> \alpha_{t} = t&,\quad \beta_{t}=1-t
 > \end{aligned}
 > $$
 > 其中我们已知方差为0，均值为$z$的分布就是$\delta_z$。因此，对于$p_t(x\vert z)$的选择满足方程$(3)$，其中$p_{init}=\mathcal{N}(0,I_d)$，因此这是一个有效的条件插值路径。高斯条件概率路径有几个有用的性质，使其特别适用于我们的目标，正因为如此，我们将用它作为条件概率路径的原型例子。在上图中，我们说明了它在图像中的应用。我们可以将在边际路径$p_t$中的采样用以下方程描述：
 > $$
-> z\sim p_{data},\;\epsilon\sim p_{init} = \mathcal{N}(0,I_d)\Rightarrow x=\alpha_tz+\beta_t\epsilon\sim p_t
+> z\sim p_{data},\;\epsilon\sim p_{init} = \mathcal{N}(0,I_d)\Longrightarrow x=\alpha_tz+\beta_t\epsilon\sim p_t
 > $$
 > 直观地看，上面的过程添加了更多的噪声，直到时间$t=0$，此时只有噪声。在下图中，我们绘制了高斯噪声和简单数据分布之间的插值路径的示例。
 
-<img src="/Users/hongshuo/Library/Application Support/typora-user-images/image-20250329003621787.png" alt="image-20250329003621787" style="zoom:50%;" />
+<img src="/Users/hongshuo/Library/Application Support/typora-user-images/image-20250329003621787.png" alt="image-20250329003621787" style="zoom:30%;" />
 
 
 
-## 3.2 条件和边际向量场
+## 3.2 Conditional and Marginal Vector Field
 
-我们现在使用最近定义的概率路径$p_t$的概念来为流模型构造一个训练目标$u_t^{target}$。我们的想法是从简单的组建构造出$u_t^{target}$。
+我们现在使用概率路径$p_t$的概念来为流模型构造一个训练目标$u_t^{target}$。我们的想法是从简单的组建构造出$u_t^{target}$。
 
 **目标**：构造$u_t^{target}$使得$X_t\sim p_t$。
 
-**边缘化技巧**
+### 条件向量场
 
-对于每一个样本$z\in R^d$，设$u_t^{target}(\cdot\vert z)$表示一个**条件向量场**，定义为对应的ODE得到条件概率路径$p_t(\cdot\vert z)$，即：
+对于每个样本点$z$，其条件向量场$u_t^{\text{target}}(x|z)$定义了一个特定的 ODE，使得轨迹$X_t$的分布从$p_{init}$演变为$p_{t}(\cdot\vert z)$，直到最终的$p_{1}(\cdot|z) = p_{\text{data}}=\delta(z)$。它是一个“个性化”的向量场，专注于从噪声生成某个特定样本$z$。因此我们可以给出其定义：
 $$
-X_0\sim p_{init},\;\frac{d}{dt}X_t=u_t^{target}(X_t\vert z)\Rightarrow X_t\sim p_t(\cdot\vert z)\;\;(0\le t\le1)
+u_{t}^{\text{target}}(x|z)\qquad(0\le t\le 1,\quad x,z\in R^{d})
+\\[10pt]
+s.t.\quad X_{0}\sim p_{\text{init}},\; \frac{d}{dt}X_{t} = u_{t}^{\text{target}}(X_{t}|z)\Longrightarrow X_{t}\sim p_{t}(\cdot|z)\;(0\le t\le1)
 $$
-**条件向量场$u_t^{target}(x|z)$**
 
-- 对于每个$z$，$u_t^{target}(x|z)$定义了一个特定的 ODE，使得轨迹$X_t$的分布从$p_{init}$演变为$p_{t}(\cdot\vert z)$。
+### 边际向量场
 
-- 意义：它是一个“个性化”的向量场，专注于从噪声生成某个特定样本$z$。
-
-**边际向量场**$u_t^{target}(x)$就由下式定义：
+我们已经知道了条件向量场的定义，则边际向量场就是将条件向量场边际化。**边际向量场**$u_t^{target}(x)$就由下式定义：
 $$
 u_{t}^{target}(x)=\int u_t^{target}(x\vert z)\frac{p_t(x\vert z)p_{data}(z)}{p_t(x)}dz
 $$
-**边际向量场$u_t^{target}(x)$**
-
-- 边际向量场是对所有$z$的加权平均，权重是后验概率$\frac{p_t(x|z)p_{data}(z)}{p_t(x)}$（由贝叶斯公式得来）。
-
-- 它驱动全局轨迹$X_t$沿着边际概率路径$p_t$演变。
-
-- 意义：它是“全局指挥官”，确保整体分布从$p_{init}$到$p_{data}$。
+边际向量场$u_t^{target}(x)$可以理解为对所有$z$的加权平均，权重是后验概率$\frac{p_t(x|z)p_{data}(z)}{p_t(x)}$(由贝叶斯公式得来)。它驱动全局轨迹$X_t$沿着边际概率路径$p_t$演变。
 
 则边际概率路径就是：
 $$
-X_0\sim p_{init},\;\frac{d}{dt}X_t=u_t^{target}(X_t)\Rightarrow X_t\sim p_t\;\;(0\le t\le1)
+X_0\sim p_{\text{init}},\;\frac{d}{dt}X_t=u_t^{\text{target}}(X_t)\Rightarrow X_t\sim p_t\;\;(0\le t\le1)
 $$
-特别的，对于这个ODE，$X_0\sim p_{init}$，因此我们会说：“$u_t^{target}$将噪声$p_{init}$转化为数据$p_{data}$”
+特别的，对于这个ODE，$X_0\sim p_{\text{init}}$，因此我们会说：“$u_t^{\text{target}}$将噪声$p_{\text{init}}$转化为数据$p_{\text{data}}$”
 
-<img src="/Users/hongshuo/Library/Application Support/typora-user-images/image-20250329004839227.png" alt="image-20250329004839227" style="zoom:50%;" />
+<img src="/Users/hongshuo/Library/Application Support/typora-user-images/image-20250329004839227.png" alt="image-20250329004839227" style="zoom:30%;" />
 
-<img src="/Users/hongshuo/Library/Application Support/typora-user-images/image-20250329004850545.png" alt="image-20250329004850545" style="zoom:50%;" />
+<img src="/Users/hongshuo/Library/Application Support/typora-user-images/image-20250329004850545.png" alt="image-20250329004850545" style="zoom:30%;" />
 
-> 该图是对于边缘化技巧的说明。用ODEa模拟概率路径，数据分布$p_{data}$为蓝色背景。高斯分布$p_{init}$是红色背景。上面一行是条件概率路径。左：条件路径$p_t(\cdot\vert z)$的真值样本。中：随时间变化的ODE样本。右：模拟方程$(11)$中目标为$u_t^{target}(x\vert z)$的ODE的轨迹。下面一行是模拟边际概率路径。左：来自$p_t$的真值样本。中：随时间变化的ODE样本。右：利用边际向量场$u_t^{flow}(x)$模拟ODE的轨迹。
+> 该图是对于边缘化技巧的说明。用ODE模拟概率路径，数据分布$p_{\text{data}}$为背景中的蓝色部分。高斯分布$p_{\text{init}}$是红色部分。
+>
+> 上面一行是条件概率路径。左：条件路径$p_t(\cdot\vert z)$的真值样本。中：随时间变化的ODE样本。右：模拟方程中目标为$u_t^{\text{target}}(x|z)$的ODE的轨迹。
+>
+> 下面一行是边际概率路径。左：来自$p_t$的真值样本。中：随时间变化的ODE样本。右：利用边际向量场$u_t^{\text{flow}}(x)$模拟ODE的轨迹。
 >
 > 可以看出，条件向量成遵循条件概率路径，边际向量场遵循边际概率路径。
-
-如上图所示，在我们证明边缘化技巧之前，让我们先解释一下它为什么有用：边缘化技巧允许我们从条件向量场构造边际向量场，这大大简化了寻找训练目标公式的问题，因为我们经常可以解析地找到满足方程$(8)$的条件向量场$u_t^{target}(\cdot\vert z)$。
-
-**边缘 SCRIPT化技巧**：就像从一群专家（条件向量场）的意见中综合出一个总决策（边际向量场），简化了问题。
 
 接下来通过为高斯概率路径的运行示例推导一个条件向量场$u_{t}(x\vert z)$来说明这一点。
 
@@ -168,7 +181,7 @@ $$
 > \\
 > \Updownarrow
 > \\
-> \forall x\in R^d,t\in[0,1],\; \partial_tp_t(x)=-div(p_tu_t^{target})(x)
+> \forall x\in R^d,t\in[0,1],\; \underbrace{ \partial_tp_t(x)}_{\text{Change of Probability Mass at x}}=\underbrace{-div(p_t u_t)(x)}_{\text{Outflow - Inflow of Probability Mass from u}}
 > $$
 > 其中$\partial_tp_t=\frac{d}{dt}p_t(x)$表示$p_t(x)$关于时间的偏导数。上式即为**连续性方程**。
 >
@@ -181,7 +194,7 @@ $$
 > \\[10pt]
 > &=\int{\partial_t p_t(x\vert z)p_{data}(z)dz}
 > \\[10pt]
-> &=\int{-div\left(p_t(\cdot\vert z)u_t^{target}(\cdot\vert z)\right)(x)p_{data}(z)dz}
+> &=\int{-div\left(p_t(\cdot\vert z)u_t(\cdot\vert z)\right)(x)p_{data}(z)dz}
 > \\[10pt]
 > &=-div\left(\int{p_t(x\vert z)u_t^{target}(x\vert z))(x)p_{data}(z)dz}\right)
 > \\[10pt]
@@ -191,49 +204,23 @@ $$
 > \end{aligned}
 > $$
 
-## 条件和边际分数函数
+## Conditional and Marginal Score Function
 
-**分数函数的定义与边际分数函数**
+### 分数函数的定义
 
-我们刚刚成功构建了一个流模型的训练目标，现在我们将这种推理扩展到随机微分方程。我们定义$p_t$的**边际分数函数**为$\nabla\log{p_{t}(x)}$
+我们定义$p_t$的**边际分数函数**为$\nabla\log{p_{t}(x)}$，其意义如下：
 
-- 意义：
-  - 它表示概率密度$p_t(x)$变化最快的方向。
-  - 在生成模型中，分数函数可以看作“去噪方向”，告诉我们如何从当前点$x$调整以更接近$p_t(x)$的高概率区域。
+- 它表示概率密度$p_t(x)$变化最快的方向。
+- 在生成模型中，分数函数可以看作“去噪方向”，告诉我们如何从当前点$x$调整以更接近$p_t(x)$的高概率区域。
 
-**为什么需要分数函数？**
+### 条件分数函数
 
-- 在流模型（ODE）中，$u_t^{target}$直接驱动轨迹。
-- 在扩散模型（SDE）中，增加了布朗运动（随机噪声）项$\sigma_tdW_t$，需要额外的修正项来抵消噪声的影响。
-- 分数函数$\nabla\log{p_t(x)}$提供了这个修正方向。
-
-我们可以用这种定义把ODE扩展到SDE，如以下过程所示
-
-**SDE扩展技巧**
-
-将条件向量场$u_{t}^{target}(x\vert z)$和边际向量场$u_{t}^{target}(x)$如之前一样定义，然后定义一个扩散系数$\sigma_t\ge0$，我们可以通过相同的概率路径构造一个SDE：
+很显然，条件分数函数由以下公式定义：
 $$
-X_0\sim p_{init},\;dX_t=\left[ u_t^{target}(X_t)+\frac{\sigma_{t}^{2}}{2}\nabla{\log{p_t(X_t)}} \right]dt+\sigma_tdW_t
-\\[10pt]
-\Rightarrow X_t\sim p_t\;(0\le t\le1)
+\nabla \log{p_{t}(x|z)}
 $$
-**直观理解**：
 
-- $u_t^{target}$是确定性漂移，沿概率路径移动。
-- $\sigma_tdW_t$是随机扰动，引入噪声。
-- $\frac{\sigma_{t}^{2}}{2}\nabla{\log{p_t(X_t)}}$是“去噪修正项”，抵消布朗运动带来的扩散效应，确保$X_t$仍遵循$p_t$。
-
-结果：轨迹$X_T$的分布仍然是$p_t$。
-
-<img src="/Users/hongshuo/Library/Application Support/typora-user-images/image-20250331184817638.png" alt="image-20250331184817638" style="zoom:50%;" />
-
-<img src="/Users/hongshuo/Library/Application Support/typora-user-images/image-20250331184831620.png" alt="image-20250331184831620" style="zoom:50%;" />
-
-> 上图是针对SDE扩展的说明，用SDEs模拟概率路径。数据分布$p_{data}$为蓝色背景。红色背景为高斯分布$p_{init}$。可以看到，SDE将样本从$p_{init}$传输到$\delta_z$（条件路径）和$p_{data}$（边缘路径）的样本。
-
-
-
-**条件分数函数**
+### 边际分数函数
 
 和之前条件向量场和边际向量场之间的转化相似，我们也可以用条件分数函数表示边际分数函数：
 $$
@@ -248,6 +235,27 @@ $$
 \end{aligned}
 $$
 
+### 扩展至SDE
+
+我们可以用这种定义把ODE扩展到SDE，将条件向量场$u_{t}^{target}(x\vert z)$和边际向量场$u_{t}^{target}(x)$如之前一样定义，然后定义一个扩散系数$\sigma_t\ge0$，我们可以通过相同的概率路径构造一个SDE：
+
+$$
+X_0\sim p_{init},\;dX_t=\left[ u_t^{target}(X_t)+\frac{\sigma_{t}^{2}}{2}\nabla{\log{p_t(X_t)}} \right]dt+\sigma_tdW_t
+\\[10pt]
+\Rightarrow X_t\sim p_t\;(0\le t\le1)
+$$
+**直观理解**：
+
+- $u_t^{target}$是确定性漂移，沿概率路径移动。
+- $\sigma_tdW_t$是随机扰动，引入噪声。
+- $\frac{\sigma_{t}^{2}}{2}\nabla{\log{p_t(X_t)}}$是“去噪修正项”，抵消布朗运动带来的扩散效应，确保$X_t$仍遵循$p_t$
+
+**结果**：轨迹$X_T$的分布仍然是$p_t$。
+
+<img src="/Users/hongshuo/Library/Application Support/typora-user-images/image-20250331184817638.png" alt="image-20250331184817638" style="zoom:30%;" />
+
+<img src="/Users/hongshuo/Library/Application Support/typora-user-images/image-20250331184831620.png" alt="image-20250331184831620" style="zoom:30%;" />
+
 > **高斯概率路径的分数函数**
 >
 > 对于高斯路径$p_t(x|z)=\mathcal{N}(x;\alpha_tz,\beta_t^2I_d)$，我们可以利用高斯概率密度来得到：
@@ -256,5 +264,21 @@ $$
 > $$
 > 其分数是关于$x$的线性函数，这是高斯分布的一个特殊性质。
 
+## 总结
 
+### Conditional Prob. Path, Vector Field, and Score
+
+|                              | Notation                     | Key Property                                        | Gaussian Example                                             |
+| ---------------------------- | ---------------------------- | --------------------------------------------------- | ------------------------------------------------------------ |
+| Conditional Probability Path | $p_{t}(\cdot|z)$             | Interpolates $p_{\text{init}}$ and a data point $z$ | $\mathcal{N}(\alpha_{t}z,\beta_{t}^{2}I_{d})$                |
+| Conditional Vector Field     | $u_{t}^{\text{target}}(x|z)$ | ODE follows conditional path                        | $\left( \overset{\cdot}{\alpha}_t-\frac{\overset{\cdot}{\beta}_t}{\beta_t}\alpha_t \right)z+\frac{\overset{\cdot}{\beta}_t}{\beta_t}x$ |
+| Conditional Score Function   | $\nabla{\log{p_{t}(x|z)}}$   | Gradient of log-likelihood                          | $-\frac{x-\alpha_tz}{\beta_t^2}$                             |
+
+### Marginal Prob. Path, Vector Field, and Score
+
+|                           | Notation                   | Key property                                         | Formula                                                      |
+| ------------------------- | -------------------------- | ---------------------------------------------------- | ------------------------------------------------------------ |
+| Marginal Probability Path | $p_{t}$                    | Interpolates $p_{\text{init}}$ and $p_{\text{data}}$ | $p_t(x)=\int{p_t(x\vert z)p_{data}(z)dz}$                    |
+| Marginal Vector Field     | $u_{t}^{\text{target}}(x)$ | ODE follows marginal path                            | $u_{t}^{\text{target}}(x)=\int u_t^{\text{target}}(x\vert z)\frac{p_t(x|z)p_{\text{data}}(z)}{p_t(x)}dz$ |
+| Marginal Score Function   | $\nabla{\log{p_{t}(x)}}$   | Can be used to convert ODE target to SDE             | $\nabla\log{p_t(x)} = \int{\nabla{\log{p_{t}(x|z)}}\frac{p_{t}(x|z)p_{\text{data}}(z)}{p_{t}(x)}dz}$ |
 
