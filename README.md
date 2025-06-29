@@ -20,31 +20,7 @@
 
 ### 📄 论文笔记
 
-#### 扩散模型核心论文
-
-- **[扩散模型奠基与DDPM](Paper%20Notes/扩散模型奠基与DDPM/扩散模型奠基与DDPM.md)**: DDPM原理深度解析
-  - 前向扩散过程详解
-  - 反向去噪过程推导
-  - ELBO损失函数推导
-  - U-Net架构设计原理
-  - 时间嵌入机制
-  
-- **[去噪扩散隐式模型(DDIM)](Paper%20Notes/去噪扩散隐式模型(DDIM)/Denoising%20Diffusion%20Implicit%20Models.md)**: DDIM加速采样技术
-  - 非马尔可夫扩散过程
-  - 确定性生成过程
-  - 采样速度优化
-
 ### 💻 计算机视觉基础
-
-## 🔧 核心概念速查
-
-| 概念 | 描述 | 相关资料 |
-|------|------|----------|
-| **DDPM** | 去噪扩散概率模型，生成模型的重要突破 | [DDPM详解](Paper%20Notes/扩散模型奠基与DDPM/扩散模型奠基与DDPM.md) |
-| **DDIM** | 确定性采样的扩散隐式模型 | [DDIM解析](Paper%20Notes/去噪扩散隐式模型(DDIM)/Denoising%20Diffusion%20Implicit%20Models.md) |
-| **Flow Models** | 基于常微分方程的生成模型 | [Flow Models](MIT_6.S184/Lec02%20Flow%20and%20Diffusion%20Models.md#21-流模型) |
-| **贝叶斯网络** | 图模型表示的概率分布 | [Background](Stanford_CS236/Lec02%20-%20Background.md#贝叶斯网络) |
-| **U-Net** | 扩散模型中的核心网络架构 | [U-Net详解](Paper%20Notes/扩散模型奠基与DDPM/扩散模型奠基与DDPM.md#2-u-net的作用与噪声预测) |
 
 ## 🤝 贡献
 
