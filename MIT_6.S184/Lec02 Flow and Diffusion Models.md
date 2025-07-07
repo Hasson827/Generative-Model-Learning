@@ -22,7 +22,7 @@ $$
 $$
 \begin{aligned}
 \frac{d}{dt}X_t &= u_t(X_t)
-\\[10pt]
+\\
 X_0 &= x_0
 \end{aligned}
 $$
@@ -33,10 +33,10 @@ $$
 现在我们可能会问：如果我们在$t=0$时刻从$X_0=x_0$出发，那么在时间$t$的时候我们在哪里（即$X_t$）？这个问题的由一个称为**流 (Flow)**的函数来回答，它是ODE在不同初始条件下的解的集合：
 $$
 \psi:R^{d}\times [0,1]\mapsto R^{d}\quad\text{s.t.}\quad(x_{0},t)\mapsto\psi_{t}(x_{0})
-\\[10pt]
+\\
 \begin{aligned}
 \frac{d}{dt}\psi_{t}(x_0) &= u_t(\psi_t(x_0))
-\\[10pt]
+\\
 \psi_0(x_0) &= x_0
 \end{aligned}
 $$
@@ -71,7 +71,7 @@ $$
 **流模型**：我们现在可以通过一个常微分方程构建一个生成模型。记住，我们的目标是把一个简单分布$p_{init}$转换成一个复杂的分布$p_{data}$。因此，模拟ODE是这种转换的自然选择，**流模型**由以下ODE描述：
 $$
 X_0\sim p_{init}
-\\[10pt]
+\\
 \frac{d}{dt}X_t = u_{t}^{\theta}(X_t)
 $$
 
@@ -97,7 +97,7 @@ $$
 其由下式给出：
 $$
 \forall t\in [0,1],\;X_t\text{ is a random variable}
-\\[10pt]
+\\
 X:[0,1]\rightarrow R^{d},\,\,t\mapsto X_{t}\text{ is a random trajectory for every draw of X}
 $$
 模拟相同的随机过程两次，我们可能会得到不同的结果，因为动力学是随机的。
@@ -118,14 +118,14 @@ $$
   2. **Independent Increments:**
      $$
      0\le t_0 \lt t_1 \lt \dots \lt t_n = 1
-     \\[10pt]
+     \\
      W_{t_1}-W_{t_0},\dots,W_{t_n}-W_{t_{n-1}}\text{ are independent random variables}
      $$
 
 我们可以用以下方式大致模拟一个布朗运动：
 $$
 h>0,W_0=0,\epsilon_t\sim\mathcal{N}(0,I_d)\,\,\,\,\,(t=0,h,2h,\dots,1-h)
-\\[10pt]
+\\
 W_{t+h}=W_t+\sqrt{h}\epsilon_{t}
 $$
 ### 从常微分方程到随机微分方程
@@ -133,10 +133,10 @@ $$
 随机微分方程（SDE）的想法是通过添加由布朗运动驱动的随机动力学来扩展常微分方程的确定性动力学。因为一切都是随机的，我们可能不再能像以前那样求导。因此，我们需要找到一个**不使用导数的ODEs的等效公式**，我们可以如下重写ODEs的轨迹$(X_t)_{0\le t\le1}$：
 $$
 \begin{aligned}
-&\qquad\qquad\frac{d}{dt}X_t = u_t(X_t)\quad\text(ODEs)
-\\[10pt]
+&\qquad\qquad\frac{d}{dt}X_t = u_t(X_t)\quad\text{(ODEs)}
+\\
 &\Leftrightarrow \frac{1}{h}(X_{t+h}-X_t)=u_t(X_t)+R_t(h)
-\\[10pt]
+\\
 &\Leftrightarrow X_{t+h} = X_t+hu_t(X_t)+hR_t(h)
 \end{aligned}
 $$
@@ -154,7 +154,7 @@ $$
 $$
 \begin{aligned}
 dX_t&=u_t(X_t)dt+\sigma_tdW_t
-\\[10pt]
+\\
 X_0&=x_0
 \end{aligned}
 $$
@@ -194,7 +194,7 @@ $$
 $$
 \begin{aligned}
 dX_t &= u_{t}^{\theta}dt+\sigma_tdW_t
-\\[10pt]
+\\
 X_0&\sim p_{init}
 \end{aligned}
 $$
@@ -208,7 +208,7 @@ $$
 $$
 \begin{aligned}
 \text{Neural Network}&: u^{\theta}:R^d\times[0,1]\to R^d,\,(x,t)\mapsto u_{t}^{\theta}(x)\text{ with parameters }\theta
-\\[10pt]
+\\
 \text{Fixed}&:\sigma_{t}:[0,1]\to [0,\infty],\,t\mapsto\sigma_{t}
 \end{aligned}
 $$
@@ -216,9 +216,9 @@ $$
 $$
 \begin{aligned}
 \text{Initialization}&:X_0\sim p_{init}
-\\[10pt]
+\\
 \text{Simulation}&:dX_t = u_{t}^{\theta}dt+\sigma_tdW_t
-\\[10pt]
+\\
 \text{Goal}&: X_1\sim p_{data}
 \end{aligned}
 $$
